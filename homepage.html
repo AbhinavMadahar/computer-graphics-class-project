@@ -119,7 +119,7 @@
                 gl.drawArrays(gl.LINE_STRIP, 8, 2);
                 gl.drawArrays(gl.LINE_LOOP, 10, 4);
 
-                for (let i = 14; i + 4 < vertices.length; i += 4) {
+                for (let i = 14; i + 4 <= vertices.length; i += 4) {
                     gl.drawArrays(gl.LINE_LOOP, i, 4);
                 }
                 
