@@ -22,6 +22,12 @@
             Try using a modern browser like Chrome.
         </canvas>
 
+        <p>I want to add a:</p>
+        <select>
+            <option>Arm</option>
+            <option>Leg</option>
+        </select>
+
         <!--Make a rectangle in the WebGL canvas and spin it-->
         <script>
             "use strict";
@@ -32,6 +38,8 @@
 
             let speed = 100;
             let direction = true;
+
+            let vertices;
 
             const init = window.onload = () => {
                 const canvas = document.getElementById('gl-canvas');
@@ -48,7 +56,7 @@
                 const program = initShaders(gl, 'vertex-shader', 'fragment-shader');
                 gl.useProgram(program);
 
-                const vertices = [
+                vertices = [
                     // torso
                     vec2(0, 0.8),
                     vec2(0, 0),
@@ -76,6 +84,18 @@
                     vec2(-0.1, 1.0),
                 ];
 
+                canvas.addEventListener('mousedown', (event) => {
+                    const x = 2 * event.clientX / canvas.width - 1;
+                    const y = 2 * (canvas.height - event.clientY) / canvas.height - 1;
+
+                    vertices.push(vec2(x, y));
+                    vertices.push(vec2(x+0.1, y));
+                    vertices.push(vec2(x+0.1, y+0.1));
+                    vertices.push(vec2(x, y+0.1));
+
+                    gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);
+                });
+
                 // load the data into the GPU
                 const bufferId = gl.createBuffer();
                 gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
@@ -98,6 +118,10 @@
                 gl.drawArrays(gl.LINE_STRIP, 6, 2);
                 gl.drawArrays(gl.LINE_STRIP, 8, 2);
                 gl.drawArrays(gl.LINE_LOOP, 10, 4);
+
+                for (let i = 14; i + 4 < vertices.length; i += 4) {
+                    gl.drawArrays(gl.LINE_LOOP, i, 4);
+                }
                 
                 setTimeout(() => requestAnimationFrame(render), speed);
             }
