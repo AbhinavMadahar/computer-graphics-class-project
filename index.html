@@ -38,21 +38,6 @@ void main() {
         <script type="text/javascript" src="./webgl-practice-toy/Common/initShaders.js"></script>
         <script type="text/javascript" src="./webgl-practice-toy/Common/MVnew.js"></script>
 
-        <!--Slider goes here-->
-        <div>
-            Rotation speed (angular): 0 percent <input id="slider" type="range" min="0" max="100" step="10" value="50" /> 100 percent
-        </div>
-
-        <!--Direction picker goes here-->
-        <button id="Direction">Change Rotation Direction</button>
-        
-        <select id="Controls" size="3">
-            <option value="0">Rotation Direction</option>
-            <option value="1">Faster</option>
-            <option value="2">Slower</option>
-        </select>
-
-
         <!--WebGL canvas goes here-->
         <canvas id="gl-canvas" width="512" height=="512">
             Your browser does not support the HTML5 canvas element.
@@ -86,10 +71,31 @@ void main() {
                 gl.useProgram(program);
 
                 const vertices = [
-                    vec2(0, 1),
-                    vec2(-1, 0),
-                    vec2(1, 0),
-                    vec2(0, -1)
+                    // torso
+                    vec2(0, 0.8),
+                    vec2(0, 0),
+
+                    // left leg
+                    vec2(-0.25, -1),
+                    vec2(0, 0),
+                    
+                    // right leg
+                    vec2(0.25, -1),
+                    vec2(0, 0),
+
+                    // left arm
+                    vec2(-0.5, 0.5),
+                    vec2(0, 0.5),
+
+                    // right arm
+                    vec2(0.5, 0.5),
+                    vec2(0, 0.5),
+
+                    // head
+                    vec2(-0.1, 0.8),
+                    vec2(0.1, 0.8),
+                    vec2(0.1, 1.0),
+                    vec2(-0.1, 1.0),
                 ];
 
                 // load the data into the GPU
@@ -102,52 +108,18 @@ void main() {
                 gl.enableVertexAttribArray(positionLoc);
                 thetaLoc = gl.getUniformLocation(program, 'uTheta');
 
-                document.getElementById('slider').onchange = (event) => speed = 100 - event.target.value;
-                document.getElementById('Direction').onclick = (event) => direction = !direction;
-
-                document.getElementById('Controls').onclick = (event) => {
-                    switch(event.target.index) {
-                        case 0:
-                            direction = !direction;
-                            break;
-
-                        case 1:
-                            speed /= 2.0;
-                            break;
-
-                        case 2:
-                            speed *= 2.0;
-                            break;
-                    }
-                };
-
-                window.onkeydown = (event) => {
-                    const key = String.fromCharCode(event.keyCode);
-
-                    switch (key) {
-                        case '1':
-                            direction = !direction;
-                            break;
-
-                        case '2':
-                            speed /= 2.0;
-                            break;
-
-                        case '3':
-                            speed *= 2.0;
-                            break;
-                    }
-                };
-                
                 render();
             };
 
             const render = () => {
                 gl.clear(gl.COLOR_BUFFER_BIT);
 
-                theta += direction ? 0.1 : -0.1;
-                gl.uniform1f(thetaLoc, theta);
-                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+                gl.drawArrays(gl.LINE_STRIP, 0, 2);
+                gl.drawArrays(gl.LINE_STRIP, 2, 2);
+                gl.drawArrays(gl.LINE_STRIP, 4, 2);
+                gl.drawArrays(gl.LINE_STRIP, 6, 2);
+                gl.drawArrays(gl.LINE_STRIP, 8, 2);
+                gl.drawArrays(gl.LINE_LOOP, 10, 4);
                 
                 setTimeout(() => requestAnimationFrame(render), speed);
             }
