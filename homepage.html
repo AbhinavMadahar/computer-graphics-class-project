@@ -17,13 +17,13 @@
         <script type="text/javascript" src="./webgl-practice-toy/Common/MVnew.js"></script>
 
         <!--WebGL canvas goes here-->
-        <canvas id="gl-canvas" width="512" height=="512">
+        <canvas id="gl-canvas" width="512" height="512">
             Your browser does not support the HTML5 canvas element.
             Try using a modern browser like Chrome.
         </canvas>
 
         <p>I want to add a:</p>
-        <select>
+        <select id="bodypart">
             <option>Arm</option>
             <option>Leg</option>
         </select>
@@ -88,10 +88,21 @@
                     const x = 2 * event.clientX / canvas.width - 1;
                     const y = 2 * (canvas.height - event.clientY) / canvas.height - 1;
 
-                    vertices.push(vec2(x, y));
-                    vertices.push(vec2(x+0.1, y));
-                    vertices.push(vec2(x+0.1, y+0.1));
-                    vertices.push(vec2(x, y+0.1));
+                    switch (document.getElementById('bodypart').value) {
+                        case 'Arm':
+                            vertices.push(vec2(x, y));
+                            vertices.push(vec2(x+0.2, y));
+                            vertices.push(vec2(x+0.2, y+0.1));
+                            vertices.push(vec2(x, y+0.1));
+                            break;
+
+                        case 'Leg':
+                            vertices.push(vec2(x, y));
+                            vertices.push(vec2(x+0.1, y));
+                            vertices.push(vec2(x+0.1, y+0.2));
+                            vertices.push(vec2(x, y+0.2));
+                            break;
+                    }
 
                     gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);
                 });
