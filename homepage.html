@@ -24,13 +24,15 @@
             Try using a modern browser like Chrome.
         </canvas>
 
+        <button id="undo">Undo</button>
+
         <p>I want to add a:</p>
         <select id="bodypart">
             <option>Arm</option>
             <option>Leg</option>
         </select>
 
-        Size: <input type="number" id="scaling-factor" />
+        Size: <input type="number" id="scaling-factor" value="1" />
 
         <p>Side:</p>
         <select id="side">
@@ -128,6 +130,15 @@
 
                     gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);
                 });
+
+                // remove the last bodypart
+                document.getElementById('undo').onclick = () => {
+                    if (bodyparts.length > 0) {
+                        const numberOfVertices = bodyparts[bodyparts.length-1][1];
+                        vertices.splice(vertices.length-numberOfVertices, numberOfVertices);
+                        bodyparts.pop();
+                    }
+                };
 
                 // load the data into the GPU
                 const bufferId = gl.createBuffer();

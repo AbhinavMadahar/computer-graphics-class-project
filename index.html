@@ -3,6 +3,8 @@
 <html>
     <head>
         <title>Monster Creator by Liza and Abhinav</title>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta content="utf-8" http-equiv="encoding">
 
         <script id="vertex-shader" type="x-shader/x-vertex">
             #version 300 es
@@ -44,10 +46,20 @@ void main() {
             Try using a modern browser like Chrome.
         </canvas>
 
+        <button id="undo">Undo</button>
+
         <p>I want to add a:</p>
         <select id="bodypart">
             <option>Arm</option>
             <option>Leg</option>
+        </select>
+
+        Size: <input type="number" id="scaling-factor" value="1" />
+
+        <p>Side:</p>
+        <select id="side">
+            <option>Left</option>
+            <option>Right</option>
         </select>
 
         <!--Make a rectangle in the WebGL canvas and spin it-->
@@ -62,6 +74,7 @@ void main() {
             let direction = true;
 
             let vertices;
+            let bodyparts = [];
 
             const init = window.onload = () => {
                 const canvas = document.getElementById('gl-canvas');
@@ -110,12 +123,21 @@ void main() {
                     const x = 2 * event.clientX / canvas.width - 1;
                     const y = 2 * (canvas.height - event.clientY) / canvas.height - 1;
 
+                    const scalingFactor = document.getElementById('scaling-factor').value;
+                    const side = document.getElementById('side').value === 'Right' ? 1 : -1;
+
                     switch (document.getElementById('bodypart').value) {
                         case 'Arm':
                             vertices.push(vec2(x, y));
-                            vertices.push(vec2(x+0.2, y));
-                            vertices.push(vec2(x+0.2, y+0.1));
-                            vertices.push(vec2(x, y+0.1));
+                            vertices.push(vec2(x+0.1*scalingFactor*side, y));
+                            vertices.push(vec2(x+0.1*scalingFactor*side, y+0.08*scalingFactor));
+                            vertices.push(vec2(x+0.11*scalingFactor*side, y+0.08*scalingFactor));
+                            vertices.push(vec2(x+0.11*scalingFactor*side, y+0.1*scalingFactor));
+                            vertices.push(vec2(x+0.09*scalingFactor*side, y+0.1*scalingFactor));
+                            vertices.push(vec2(x+0.09*scalingFactor*side, y+0.02*scalingFactor));
+                            vertices.push(vec2(x, y+0.02*scalingFactor));
+
+                            bodyparts.push([gl.LINE_LOOP, 8]);
                             break;
 
                         case 'Leg':
@@ -123,11 +145,22 @@ void main() {
                             vertices.push(vec2(x+0.1, y));
                             vertices.push(vec2(x+0.1, y+0.2));
                             vertices.push(vec2(x, y+0.2));
+
+                            bodyparts.push([gl.LINE_LOOP, 4]);
                             break;
                     }
 
                     gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);
                 });
+
+                // remove the last bodypart
+                document.getElementById('undo').onclick = () => {
+                    if (bodyparts.length > 0) {
+                        const numberOfVertices = bodyparts[bodyparts.length-1][1];
+                        vertices.splice(vertices.length-numberOfVertices, numberOfVertices);
+                        bodyparts.pop();
+                    }
+                };
 
                 // load the data into the GPU
                 const bufferId = gl.createBuffer();
@@ -145,6 +178,7 @@ void main() {
             const render = () => {
                 gl.clear(gl.COLOR_BUFFER_BIT);
 
+                // render stick figure
                 gl.drawArrays(gl.LINE_STRIP, 0, 2);
                 gl.drawArrays(gl.LINE_STRIP, 2, 2);
                 gl.drawArrays(gl.LINE_STRIP, 4, 2);
@@ -152,8 +186,19 @@ void main() {
                 gl.drawArrays(gl.LINE_STRIP, 8, 2);
                 gl.drawArrays(gl.LINE_LOOP, 10, 4);
 
-                for (let i = 14; i + 4 <= vertices.length; i += 4) {
-                    gl.drawArrays(gl.LINE_LOOP, i, 4);
+                // render body parts
+                if (bodyparts.length > 0) {
+                    let vertexIndex = 14;
+                    let bodypartIndex = 0;
+                    while (true) {
+                        try {
+                            gl.drawArrays(bodyparts[bodypartIndex][0], vertexIndex, bodyparts[bodypartIndex][1]);
+                            vertexIndex += bodyparts[bodypartIndex][1];
+                            bodypartIndex++;
+                        } catch (e) {
+                            break;
+                        }
+                    }
                 }
                 
                 setTimeout(() => requestAnimationFrame(render), speed);
