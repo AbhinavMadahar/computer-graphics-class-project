@@ -2,7 +2,9 @@
 
 <html>
     <head>
-        <title>Monster Creator</title>
+        <title>Monster Creator by Liza and Abhinav</title>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta content="utf-8" http-equiv="encoding">
 
         <script id="vertex-shader" type="x-shader/x-vertex">
             include(`vertex-shader.vs')
@@ -22,120 +24,22 @@
             Try using a modern browser like Chrome.
         </canvas>
 
+        <button id="undo">Undo</button>
+
         <p>I want to add a:</p>
         <select id="bodypart">
             <option>Arm</option>
             <option>Leg</option>
         </select>
 
-        <!--Make a rectangle in the WebGL canvas and spin it-->
-        <script>
-            "use strict";
+        Size: <input type="number" id="scaling-factor" value="1" />
 
-            let gl;
-            let theta = 0.0;
-            let thetaLoc;
+        <p>Side:</p>
+        <select id="side">
+            <option>Left</option>
+            <option>Right</option>
+        </select>
 
-            let speed = 100;
-            let direction = true;
-
-            let vertices;
-
-            const init = window.onload = () => {
-                const canvas = document.getElementById('gl-canvas');
-
-                gl = canvas.getContext('webgl2');
-                if (!gl) {
-                    alert("WebGL 2.0 isn't available");
-                }
-
-                // configure WebGL
-                gl.viewport(0, 0, canvas.width, canvas.height);
-                gl.clearColor(1.0, 1.0, 1.0, 1.0);  // set default colour to white
-
-                const program = initShaders(gl, 'vertex-shader', 'fragment-shader');
-                gl.useProgram(program);
-
-                vertices = [
-                    // torso
-                    vec2(0, 0.8),
-                    vec2(0, 0),
-
-                    // left leg
-                    vec2(-0.25, -1),
-                    vec2(0, 0),
-                    
-                    // right leg
-                    vec2(0.25, -1),
-                    vec2(0, 0),
-
-                    // left arm
-                    vec2(-0.5, 0.5),
-                    vec2(0, 0.5),
-
-                    // right arm
-                    vec2(0.5, 0.5),
-                    vec2(0, 0.5),
-
-                    // head
-                    vec2(-0.1, 0.8),
-                    vec2(0.1, 0.8),
-                    vec2(0.1, 1.0),
-                    vec2(-0.1, 1.0),
-                ];
-
-                canvas.addEventListener('mousedown', (event) => {
-                    const x = 2 * event.clientX / canvas.width - 1;
-                    const y = 2 * (canvas.height - event.clientY) / canvas.height - 1;
-
-                    switch (document.getElementById('bodypart').value) {
-                        case 'Arm':
-                            vertices.push(vec2(x, y));
-                            vertices.push(vec2(x+0.2, y));
-                            vertices.push(vec2(x+0.2, y+0.1));
-                            vertices.push(vec2(x, y+0.1));
-                            break;
-
-                        case 'Leg':
-                            vertices.push(vec2(x, y));
-                            vertices.push(vec2(x+0.1, y));
-                            vertices.push(vec2(x+0.1, y+0.2));
-                            vertices.push(vec2(x, y+0.2));
-                            break;
-                    }
-
-                    gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);
-                });
-
-                // load the data into the GPU
-                const bufferId = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
-                gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);
-
-                const positionLoc = gl.getAttribLocation(program, 'aPosition');
-                gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
-                gl.enableVertexAttribArray(positionLoc);
-                thetaLoc = gl.getUniformLocation(program, 'uTheta');
-
-                render();
-            };
-
-            const render = () => {
-                gl.clear(gl.COLOR_BUFFER_BIT);
-
-                gl.drawArrays(gl.LINE_STRIP, 0, 2);
-                gl.drawArrays(gl.LINE_STRIP, 2, 2);
-                gl.drawArrays(gl.LINE_STRIP, 4, 2);
-                gl.drawArrays(gl.LINE_STRIP, 6, 2);
-                gl.drawArrays(gl.LINE_STRIP, 8, 2);
-                gl.drawArrays(gl.LINE_LOOP, 10, 4);
-
-                for (let i = 14; i + 4 <= vertices.length; i += 4) {
-                    gl.drawArrays(gl.LINE_LOOP, i, 4);
-                }
-                
-                setTimeout(() => requestAnimationFrame(render), speed);
-            }
-        </script>
+        <script src="homepage.js"></script>
     </body>
 </html>

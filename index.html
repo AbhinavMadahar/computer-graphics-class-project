@@ -2,7 +2,9 @@
 
 <html>
     <head>
-        <title>Monster Creator</title>
+        <title>Monster Creator by Liza and Abhinav</title>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta content="utf-8" http-equiv="encoding">
 
         <script id="vertex-shader" type="x-shader/x-vertex">
             #version 300 es
@@ -44,13 +46,22 @@ void main() {
             Try using a modern browser like Chrome.
         </canvas>
 
+        <button id="undo">Undo</button>
+
         <p>I want to add a:</p>
         <select id="bodypart">
             <option>Arm</option>
             <option>Leg</option>
         </select>
 
-        <!--Make a rectangle in the WebGL canvas and spin it-->
-        <script src="./index.js">/script>
-   </body>
+        Size: <input type="number" id="scaling-factor" value="1" />
+
+        <p>Side:</p>
+        <select id="side">
+            <option>Left</option>
+            <option>Right</option>
+        </select>
+
+        <script src="homepage.js"></script>
+    </body>
 </html>
