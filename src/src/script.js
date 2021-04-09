@@ -104,9 +104,11 @@ const onDocumentMouseMove = (event) => {
     const y = mouseY / window.innerHeight;
 
     // project x and y onto a sphere with radius 7
-    camera.position.x = radius * Math.sin(-1 * x * Math.PI);
-    camera.position.y = radius * Math.sin(y * Math.PI);
-    camera.position.z = radius * Math.cos(y * Math.PI);
+    // from mathematics, position.x ^ 2 + position.y ^ 2 + position.z^2 == radius^2
+
+    camera.position.x = radius * Math.cos(2 * x * Math.PI);  // x moves in and out
+    camera.position.y = radius * Math.sin(y * Math.PI);  // y moves up and down
+    camera.position.z = radius * Math.sin(2 * x * Math.PI); // z moves left and right
 
     camera.lookAt(0, 0, 0);
 };
@@ -126,11 +128,6 @@ document.addEventListener('keyup', (event) => {
 const clock = new THREE.Clock();
 
 const tick = () => {
-    const elapsedTime = clock.getElapsedTime();
-
-    // Update objects
-    sphere.rotation.y = .5 * elapsedTime;
-
     // Update Orbital Controls
     // controls.update()
 
