@@ -129,9 +129,20 @@ document.addEventListener('keyup', (event) => {
     }
 });
 
-torso.on('click', (event) => {
+const addBodyPart = (event) => {
     const location = event.intersects[0].point;  // location of the click
-})
+
+    // now we create a new bodypart, which we set as just a sphere for now.
+    // later, the user will be able to control what kind of bodypart to make.
+    // also, this addBodyPart method is added to the new bodypart so that the user can add bodyparts on other bodyparts
+
+    const geometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 64, 64, false);
+    const bodypart = new THREE.Mesh(geometry, material);
+    scene.add(bodypart);
+    bodypart.position.set(location.x, location.y, location.z);
+    bodypart.on('click', addBodyPart);
+}
+torso.on('click', addBodyPart);
 
 const clock = new THREE.Clock();
 
