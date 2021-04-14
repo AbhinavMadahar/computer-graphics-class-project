@@ -2,6 +2,7 @@ import './style.css';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import * as dat from 'dat.gui';
+import { Interaction } from 'three.interaction';
 
 // Loading
 const textureLoader = new THREE.TextureLoader();
@@ -16,6 +17,34 @@ const canvas = document.querySelector('canvas.webgl');
 // Scene
 const scene = new THREE.Scene();
 
+/**
+ * Sizes
+ */
+ const sizes = {
+    width: window.innerWidth,
+    height: window.innerHeight
+}
+
+/**
+ * Camera
+ */
+// Base camera
+
+const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100);
+camera.position.x = 0;
+camera.position.y = 0;
+camera.position.z = 7;
+scene.add(camera);
+
+/**
+ * Renderer
+ */
+const renderer = new THREE.WebGLRenderer({ canvas: canvas });
+renderer.setSize(sizes.width, sizes.height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+const interaction = new Interaction(renderer, scene, camera);
+
 // Objects
 const geometry = new THREE.CylinderGeometry(1, 1, 5, 64, 64, false);
 
@@ -26,8 +55,8 @@ material.normalMap = snakeTexture;
 material.color = new THREE.Color(0x00ff00);
 
 // Mesh
-const sphere = new THREE.Mesh(geometry, material);
-scene.add(sphere);
+const torso = new THREE.Mesh(geometry, material);
+scene.add(torso);
 
 // Lights
 
@@ -36,14 +65,6 @@ pointLight.position.x = 2;
 pointLight.position.y = 3;
 pointLight.position.z = 4;
 scene.add(pointLight);
-
-/**
- * Sizes
- */
-const sizes = {
-    width: window.innerWidth,
-    height: window.innerHeight
-}
 
 window.addEventListener('resize', () =>
 {
@@ -60,26 +81,9 @@ window.addEventListener('resize', () =>
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 })
 
-/**
- * Camera
- */
-// Base camera
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100);
-camera.position.x = 0;
-camera.position.y = 0;
-camera.position.z = 7;
-scene.add(camera);
-
 // Controls
 // const controls = new OrbitControls(camera, canvas)
 // controls.enableDamping = true
-
-/**
- * Renderer
- */
-const renderer = new THREE.WebGLRenderer({ canvas: canvas });
-renderer.setSize(sizes.width, sizes.height);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 /**
  * Animate
@@ -124,6 +128,10 @@ document.addEventListener('keyup', (event) => {
         document.removeEventListener('mousemove', onDocumentMouseMove);
     }
 });
+
+torso.on('click', (event) => {
+    const location = event.intersects[0].point;  // location of the click
+})
 
 const clock = new THREE.Clock();
 
