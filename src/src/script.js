@@ -60,12 +60,12 @@ scene.add(torso);
 
 // Lights
 
-const numberOfLights = 5;
+const numberOfLights = 10;
 for (let i = 0; i < numberOfLights; i++) {
-    const pointLight = new THREE.PointLight(0xffffff, 0.5);
+    const pointLight = new THREE.PointLight(0xffffff, 0.4);
     pointLight.position.x = 10 * (Math.random() - 0.5);
     pointLight.position.y = 10 * (Math.random() - 0.5);
-    pointLight.position.z = 5;
+    pointLight.position.z = 10 * (Math.random() - 0.5);
     scene.add(pointLight);
 }
 
