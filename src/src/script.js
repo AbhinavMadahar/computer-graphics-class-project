@@ -22,8 +22,8 @@ const scene = new THREE.Scene();
  */
  const sizes = {
     width: window.innerWidth,
-    height: window.innerHeight
-}
+    height: window.innerHeight * 0.8
+};
 
 /**
  * Camera
@@ -60,11 +60,15 @@ scene.add(torso);
 
 // Lights
 
-const pointLight = new THREE.PointLight(0xffffff, 1.0);
-pointLight.position.x = 2;
-pointLight.position.y = 3;
-pointLight.position.z = 4;
-scene.add(pointLight);
+const numberOfLights = 5;
+for (let i = 0; i < numberOfLights; i++) {
+    const pointLight = new THREE.PointLight(0xffffff, 0.5);
+    pointLight.position.x = 10 * (Math.random() - 0.5);
+    pointLight.position.y = 10 * (Math.random() - 0.5);
+    pointLight.position.z = 5;
+    scene.add(pointLight);
+}
+
 
 window.addEventListener('resize', () =>
 {
@@ -132,15 +136,45 @@ document.addEventListener('keyup', (event) => {
 const addBodyPart = (event) => {
     const location = event.intersects[0].point;  // location of the click
 
-    // now we create a new bodypart, which we set as just a sphere for now.
-    // later, the user will be able to control what kind of bodypart to make.
+    // now we create a new bodypart.
+    // the user can control what kind of bodypart to make by selecting one from the drop-down.
     // also, this addBodyPart method is added to the new bodypart so that the user can add bodyparts on other bodyparts
 
-    const geometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 64, 64, false);
-    const bodypart = new THREE.Mesh(geometry, material);
-    scene.add(bodypart);
-    bodypart.position.set(location.x, location.y, location.z);
-    bodypart.on('click', addBodyPart);
+    const bodypartType = document.getElementById('bodypart-type').value;
+    switch (bodypartType) {
+        case 'Eye':
+            // add the eyeball
+            const eyeballRadius = 0.5;
+
+            const eyeballGeometry = new THREE.SphereGeometry(eyeballRadius, 64, 64);
+            const eyeballMaterial = new THREE.MeshStandardMaterial();
+            eyeballMaterial.color = new THREE.Color(0xffffff);
+            const eyeballMesh = new THREE.Mesh(eyeballGeometry, eyeballMaterial);
+            scene.add(eyeballMesh);
+            eyeballMesh.position.set(location.x, location.y, location.z);
+            eyeballMesh.on('click', addBodyPart);
+
+            // add a pupil
+            const pupilGeometry = new THREE.SphereGeometry(0.1, 64, 64);
+            const pupilMaterial = new THREE.MeshStandardMaterial();
+            pupilMaterial.color = new THREE.Color(0x000000);
+            const pupilMesh = new THREE.Mesh(pupilGeometry, pupilMaterial);
+            scene.add(pupilMesh);
+            // when we make the pupil, we point it towards the current camera position.
+            // to implement this, we take the vector difference between the center of the eyeball and the camera position.
+            // after that, we scale that vector difference so it has magnitude equal to the radius of the eyeball, and then we place the pupil at the end.
+            let difference = [camera.position.x - location.x, camera.position.y - location.y, camera.position.z - location.z];
+            let differenceMagnitude = Math.sqrt(difference[0] * difference[0] + difference[1] * difference[1] + difference[2] * difference[2]);
+            difference = [difference[0] / differenceMagnitude,
+                          difference[1] / differenceMagnitude,
+                          difference[2] / differenceMagnitude];
+            const pupilLocation = [location.x + difference[0] * eyeballRadius,
+                                   location.y + difference[1] * eyeballRadius,
+                                   location.z + difference[2] * eyeballRadius];
+            pupilMesh.position.set(...pupilLocation);
+            pupilMesh.on('click', addBodyPart);
+            break;
+    }
 }
 torso.on('click', addBodyPart);
 

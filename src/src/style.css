@@ -14,7 +14,12 @@ body
 .webgl
 {
     position: fixed;
-    top: 0;
+    top: 20vh;
     left: 0;
     outline: none;
+}
+
+#menu {
+    position: fixed;
+    margin-bottom: 0px;
 }
