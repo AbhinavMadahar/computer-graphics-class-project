@@ -69,7 +69,6 @@ for (let i = 0; i < numberOfLights; i++) {
     scene.add(pointLight);
 }
 
-
 window.addEventListener('resize', () =>
 {
     // Update sizes
@@ -102,7 +101,7 @@ let targetY = 0;
 const windowHalfX = window.innerWidth / 2;
 const windowHalfY = window.innerHeight / 2;
 
-const radius = 7;
+let radius = 7;
 
 const onDocumentMouseMove = (event) => {
     mouseX = (event.clientX - windowHalfX);
@@ -132,6 +131,18 @@ document.addEventListener('keyup', (event) => {
         document.removeEventListener('mousemove', onDocumentMouseMove);
     }
 });
+
+canvas.onwheel = (event) => {
+    event.preventDefault();
+
+    camera.position.x *= (radius + event.deltaY * 0.1) / radius;
+    camera.position.y *= (radius + event.deltaY * 0.1) / radius;
+    camera.position.z *= (radius + event.deltaY * 0.1) / radius;
+
+    radius += event.deltaY * 0.01;
+
+    camera.lookAt(0, 0, 0);
+};
 
 const addBodyPart = (event) => {
     const location = event.intersects[0].point;  // location of the click
@@ -164,15 +175,31 @@ const addBodyPart = (event) => {
             // to implement this, we take the vector difference between the center of the eyeball and the camera position.
             // after that, we scale that vector difference so it has magnitude equal to the radius of the eyeball, and then we place the pupil at the end.
             let difference = [camera.position.x - location.x, camera.position.y - location.y, camera.position.z - location.z];
-            let differenceMagnitude = Math.sqrt(difference[0] * difference[0] + difference[1] * difference[1] + difference[2] * difference[2]);
-            difference = [difference[0] / differenceMagnitude,
-                          difference[1] / differenceMagnitude,
-                          difference[2] / differenceMagnitude];
+            let distanceToCamera = Math.sqrt(difference[0] * difference[0] + difference[1] * difference[1] + difference[2] * difference[2]); 
+            difference = [difference[0] / distanceToCamera,
+                          difference[1] / distanceToCamera,
+                          difference[2] / distanceToCamera];
             const pupilLocation = [location.x + difference[0] * eyeballRadius,
                                    location.y + difference[1] * eyeballRadius,
                                    location.z + difference[2] * eyeballRadius];
             pupilMesh.position.set(...pupilLocation);
             pupilMesh.on('click', addBodyPart);
+            break;
+        
+        case 'Arm':
+            const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 3, 64, 64, false),
+                                            new THREE.MeshStandardMaterial({color: 0x00ff00}));
+            scene.add(upperArm);
+            upperArm.position.set(location.x, location.y, location.z);
+            upperArm.lookAt(torso.position.x, 1000, torso.position.z);
+            upperArm.on('click', addBodyPart);
+
+            const lowerArm = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 2, 64, 64, false),
+                                            new THREE.MeshStandardMaterial({color: 0x00ff00}));
+            scene.add(lowerArm);
+            lowerArm.position.set(upperArm.position.x * 2.2, upperArm.position.y - 1, upperArm.position.z * 2.2);
+            lowerArm.lookAt(torso.position.x, lowerArm.position.y, torso.position.z);
+            lowerArm.on('click', addBodyPart);
             break;
     }
 }
