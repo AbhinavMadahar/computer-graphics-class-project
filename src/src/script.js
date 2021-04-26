@@ -1,6 +1,5 @@
 import './style.css';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import * as dat from 'dat.gui';
 import { Interaction } from 'three.interaction';
 
@@ -30,7 +29,7 @@ const scene = new THREE.Scene();
  */
 // Base camera
 
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100);
+const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 10000);
 camera.position.x = 0;
 camera.position.y = 0;
 camera.position.z = 7;
@@ -44,6 +43,35 @@ renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 const interaction = new Interaction(renderer, scene, camera);
+
+// Set up the skybox
+let materialArray = [];
+let texture_ft = new THREE.TextureLoader().load( 'https://cs428-project.s3.us-east-2.amazonaws.com/skybox/yonder_ft.jpg');
+let texture_bk = new THREE.TextureLoader().load( 'https://cs428-project.s3.us-east-2.amazonaws.com/skybox/yonder_bk.jpg');
+let texture_up = new THREE.TextureLoader().load( 'https://cs428-project.s3.us-east-2.amazonaws.com/skybox/yonder_up.jpg');
+let texture_dn = new THREE.TextureLoader().load( 'https://cs428-project.s3.us-east-2.amazonaws.com/skybox/yonder_dn.jpg');
+let texture_rt = new THREE.TextureLoader().load( 'https://cs428-project.s3.us-east-2.amazonaws.com/skybox/yonder_rt.jpg');
+let texture_lf = new THREE.TextureLoader().load( 'https://cs428-project.s3.us-east-2.amazonaws.com/skybox/yonder_lf.jpg');
+
+materialArray.push(new THREE.MeshBasicMaterial( { map: texture_ft }));
+materialArray.push(new THREE.MeshBasicMaterial( { map: texture_bk }));
+materialArray.push(new THREE.MeshBasicMaterial( { map: texture_up }));
+materialArray.push(new THREE.MeshBasicMaterial( { map: texture_dn }));
+materialArray.push(new THREE.MeshBasicMaterial( { map: texture_rt }));
+materialArray.push(new THREE.MeshBasicMaterial( { map: texture_lf }));
+
+for (let i = 0; i < 6; i++) {
+   materialArray[i].side = THREE.BackSide;
+}
+let skyboxGeo = new THREE.BoxGeometry(10000, 10000, 10000);
+let skybox = new THREE.Mesh( skyboxGeo, materialArray );
+scene.add(skybox);  
+animate();
+
+function animate() {
+    renderer.render(scene,camera);
+    requestAnimationFrame(animate);
+}
 
 // Objects
 const geometry = new THREE.CylinderGeometry(1, 1, 5, 64, 64, false);
@@ -204,18 +232,3 @@ const addBodyPart = (event) => {
     }
 }
 torso.on('click', addBodyPart);
-
-const clock = new THREE.Clock();
-
-const tick = () => {
-    // Update Orbital Controls
-    // controls.update()
-
-    // Render
-    renderer.render(scene, camera);
-
-    // Call tick again on the next frame
-    window.requestAnimationFrame(tick);
-}
-
-tick();
