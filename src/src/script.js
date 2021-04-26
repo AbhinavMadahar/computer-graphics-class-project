@@ -1,11 +1,16 @@
 import './style.css';
 import * as THREE from 'three';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import * as dat from 'dat.gui';
 import { Interaction } from 'three.interaction';
 
 // Loading
 const textureLoader = new THREE.TextureLoader();
 const snakeTexture = textureLoader.load('/normal-maps/snake.png');
+const obj_loader = new OBJLoader();
+const mtl_loader = new MTLLoader();
 
 // Debug
 const gui = new dat.GUI();
@@ -215,19 +220,19 @@ const addBodyPart = (event) => {
             break;
         
         case 'Arm':
-            const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 3, 64, 64, false),
-                                            new THREE.MeshStandardMaterial({color: 0x00ff00}));
-            scene.add(upperArm);
-            upperArm.position.set(location.x, location.y, location.z);
-            upperArm.lookAt(torso.position.x, 1000, torso.position.z);
-            upperArm.on('click', addBodyPart);
-
-            const lowerArm = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 2, 64, 64, false),
-                                            new THREE.MeshStandardMaterial({color: 0x00ff00}));
-            scene.add(lowerArm);
-            lowerArm.position.set(upperArm.position.x * 2.2, upperArm.position.y - 1, upperArm.position.z * 2.2);
-            lowerArm.lookAt(torso.position.x, lowerArm.position.y, torso.position.z);
-            lowerArm.on('click', addBodyPart);
+            // Create a material for the weird arm
+            mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/arm.mtl', function (materials) {
+                materials.preload();
+                // Load the weird arm
+                obj_loader.setMaterials(materials);
+                obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/arm.obj', function (arm) {
+                    arm.scale.set(-0.1,0.1,0.1);
+                    scene.add(arm);
+                    arm.position.set(location.x, location.y-5, location.z-1);
+                    //arm.lookAt(torso.position.x, 1000, torso.position.z);
+                    arm.on('click', addBodyPart);
+                });
+            });
             break;
     }
 }
