@@ -177,6 +177,7 @@ canvas.onwheel = (event) => {
     camera.lookAt(0, 0, 0);
 };
 
+const bodyparts = [];
 const addBodyPart = (event) => {
     const location = event.intersects[0].point;  // location of the click
 
@@ -217,6 +218,8 @@ const addBodyPart = (event) => {
                                    location.z + difference[2] * eyeballRadius];
             pupilMesh.position.set(...pupilLocation);
             pupilMesh.on('click', addBodyPart);
+
+            bodyparts.push([eyeballMesh, pupilMesh]);
             break;
         
         case 'Arm':
@@ -231,9 +234,17 @@ const addBodyPart = (event) => {
                     arm.position.set(location.x, location.y-5, location.z-1);
                     //arm.lookAt(torso.position.x, 1000, torso.position.z);
                     arm.on('click', addBodyPart);
+                    bodyparts.push([arm]);
                 });
             });
             break;
     }
 }
 torso.on('click', addBodyPart);
+
+// the undo button removes the last body part
+document.getElementById('undo').onclick = (event) => {
+    for (let component of bodyparts.pop()) {
+        scene.remove(component);
+    }
+};
