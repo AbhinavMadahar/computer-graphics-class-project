@@ -85,7 +85,21 @@ const geometry = new THREE.CylinderGeometry(1, 1, 5, 64, 64, false);
 
 const material = new THREE.MeshStandardMaterial();
 material.normalMap = snakeTexture;
-material.color = new THREE.Color(0x00ff00);
+material.color = new THREE.Color(0x000000);
+
+const red = document.getElementById('red');
+const green = document.getElementById('green');
+const blue = document.getElementById('blue');
+
+const updateTorsoColor = (event) => {
+    material.color.setRGB(red.value / 255, green.value / 255, blue.value / 255);
+}
+
+red.onchange = updateTorsoColor;
+green.onchange = updateTorsoColor;
+blue.onchange = updateTorsoColor;
+
+updateTorsoColor();
 
 // Mesh
 const torso = new THREE.Mesh(geometry, material);
