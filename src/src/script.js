@@ -136,7 +136,7 @@ const windowHalfY = window.innerHeight / 2;
 
 let radius = 7;
 
-const onDocumentMouseMove = (event) => {
+const moveCamera = (event) => {
     mouseX = (event.clientX - windowHalfX);
     mouseY = (event.clientY - windowHalfY);
 
@@ -155,22 +155,29 @@ const onDocumentMouseMove = (event) => {
 
 document.addEventListener('keydown', (event) => {
     if (event.key === 'c') {
-        document.addEventListener('mousemove', onDocumentMouseMove);
+        document.addEventListener('mousemove', moveCamera);
     }
 });
 
 document.addEventListener('keyup', (event) => {
     if (event.key === 'c') {
-        document.removeEventListener('mousemove', onDocumentMouseMove);
+        document.removeEventListener('mousemove', moveCamera);
     }
 });
 
 canvas.onwheel = (event) => {
     event.preventDefault();
 
-    camera.position.x *= (radius + event.deltaY * 0.1) / radius;
-    camera.position.y *= (radius + event.deltaY * 0.1) / radius;
-    camera.position.z *= (radius + event.deltaY * 0.1) / radius;
+    // if the radius is too small, then the user would look inside the animal, which would look buggy.
+    // if the radius is too large, then the user would be unable to see the animal.
+    // here, we bind the radius to only appear in an appropriate range.
+    if (radius + event.deltaY * 0.01 > 10 || radius + event.deltaY * 0.01 < 3) {
+        return;
+    }
+
+    camera.position.x *= (radius + event.deltaY * 0.01) / radius;
+    camera.position.y *= (radius + event.deltaY * 0.01) / radius;
+    camera.position.z *= (radius + event.deltaY * 0.01) / radius;
 
     radius += event.deltaY * 0.01;
 
