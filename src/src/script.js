@@ -73,8 +73,24 @@ let skybox = new THREE.Mesh( skyboxGeo, materialArray );
 scene.add(skybox);  
 animate();
 
+//Set up the grass ground
+const grassTex = new THREE.TextureLoader().load('https://cs428-project.s3.us-east-2.amazonaws.com/grass/grass_mesh.png'); 
+grassTex.wrapS = THREE.RepeatWrapping; 
+grassTex.wrapT = THREE.RepeatWrapping; 
+grassTex.repeat.x = 256; 
+grassTex.repeat.y = 256; 
+const groundMat = new THREE.MeshBasicMaterial({ map: grassTex }); 
+
+const groundGeo = new THREE.PlaneGeometry(400, 400); 
+
+const ground = new THREE.Mesh(groundGeo,groundMat); 
+ground.position.y = -3;
+ground.rotation.x = -Math.PI/2;  
+ground.doubleSided = true; 
+scene.add(ground);
+
 function animate() {
-    renderer.render(scene,camera);
+    renderer.render(scene, camera);
     requestAnimationFrame(animate);
 }
 
