@@ -26,30 +26,24 @@ const scene = new THREE.Scene();
  */
  const sizes = {
     width: window.innerWidth,
-    height: window.innerHeight
-}
+    height: window.innerHeight * 0.8
+};
 
-/*
+/**
  * Camera
  */
 // Base camera
 
-// const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100);
-// camera.position.x = 0;
-// camera.position.y = 0;
-// camera.position.z = 25;
-// scene.add(camera);
-
-let camera;
-camera = new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,10000);
-camera.position.set(0,0,25);
+const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 10000);
+camera.position.x = 0;
+camera.position.y = 0;
+camera.position.z = 7;
 scene.add(camera);
 
-/*
+/**
  * Renderer
  */
 const renderer = new THREE.WebGLRenderer({ canvas: canvas });
-//renderer.setClearColor("#DDDDDD");
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
@@ -71,12 +65,12 @@ materialArray.push(new THREE.MeshBasicMaterial( { map: texture_dn }));
 materialArray.push(new THREE.MeshBasicMaterial( { map: texture_rt }));
 materialArray.push(new THREE.MeshBasicMaterial( { map: texture_lf }));
 
-for (let i = 0; i < 6; i++)
+for (let i = 0; i < 6; i++) {
    materialArray[i].side = THREE.BackSide;
-
-let skyboxGeo = new THREE.BoxGeometry( 10000, 10000, 10000);
+}
+let skyboxGeo = new THREE.BoxGeometry(10000, 10000, 10000);
 let skybox = new THREE.Mesh( skyboxGeo, materialArray );
-scene.add( skybox );  
+scene.add(skybox);  
 animate();
 
 function animate() {
@@ -84,54 +78,69 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
+//Set up the grass ground
+var grassTex = new THREE.TextureLoader().load('https://cs428-project.s3.us-east-2.amazonaws.com/grass/grass_mesh.png'); 
+grassTex.wrapS = THREE.RepeatWrapping; 
+grassTex.wrapT = THREE.RepeatWrapping; 
+grassTex.repeat.x = 256; 
+grassTex.repeat.y = 256; 
+var groundMat = new THREE.MeshBasicMaterial({map:grassTex}); 
+
+var groundGeo = new THREE.PlaneGeometry(400,400); 
+
+var ground = new THREE.Mesh(groundGeo,groundMat); 
+ground.position.y = -1.9;
+ground.rotation.x = -Math.PI/2;  
+ground.doubleSided = true; 
+scene.add(ground);
+
 // Objects
 const geometry = new THREE.CylinderGeometry(1, 1, 5, 64, 64, false);
 
 // Materials
 const material = new THREE.MeshStandardMaterial();
 material.normalMap = snakeTexture;
-material.color = new THREE.Color(0x00ff00);
+material.color = new THREE.Color(0x000000);
+
+const red = document.getElementById('red');
+const green = document.getElementById('green');
+const blue = document.getElementById('blue');
+
+const updateTorsoColor = (event) => {
+    material.color.setRGB(red.value / 255, green.value / 255, blue.value / 255);
+}
+
+red.onchange = updateTorsoColor;
+green.onchange = updateTorsoColor;
+blue.onchange = updateTorsoColor;
+
+updateTorsoColor();
 
 // Mesh
-const torso = new THREE.Mesh(geometry, material);
-scene.add(torso);
+// const torso = new THREE.Mesh(geometry, material);
+// scene.add(torso);
 
-// var torso;
-// // Create a material for the torso (a cylinder with a sphere on top)
-// mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/torso.mtl', function (materials) {
-//     materials.preload();
-// // Load the torso (a cylinder with a sphere on top)
-//   obj_loader.setMaterials(materials);
-//     obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/torso.obj', function (object) {
-//         //scene.add(object);
-//         torso = object;
-//         //torso.scale.set(5,5,5);
-//         //torso.position.set(0,0,0);
-//         //scene.add(torso);
-//     });
-// });
-
-var weird_arm; 
-// Create a material for the weird arm
-mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/arm.mtl', function (materials) {
+// Import new torso
+const torso = new THREE.Mesh();
+mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/torso/Project+Name.mtl', function (materials) {
     materials.preload();
-// Load the weird arm
-  obj_loader.setMaterials(materials);
-    obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/arm.obj', function (object) {
-        //scene.add(object);
-        weird_arm = object;
-        weird_arm.scale.set(0.1,0.1,0.1);
-        weird_arm.position.set(0,0,0);
-        scene.add(weird_arm);
+    obj_loader.setMaterials(materials);
+    obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/torso/Project+Name.obj', function (torso) {
+        torso.scale.set(0.02,0.02,0.02);
+        torso.position.set(-1,-1,0);
+        scene.add(torso);
     });
 });
 
 // Lights
-const pointLight = new THREE.PointLight(0xffffff, 1.0);
-pointLight.position.x = 2;
-pointLight.position.y = 3;
-pointLight.position.z = 4;
-scene.add(pointLight);
+const numberOfLights = 10;
+for (let i = 0; i < numberOfLights; i++) {
+    const pointLight = new THREE.PointLight(0xffffff, 0.4);
+    pointLight.position.x = 10 * (Math.random() - 0.5);
+    pointLight.position.y = 10 * (Math.random() - 0.5);
+    pointLight.position.z = 10 * (Math.random() - 0.5);
+    scene.add(pointLight);
+}
 
 window.addEventListener('resize', () =>
 {
@@ -149,15 +158,8 @@ window.addEventListener('resize', () =>
 })
 
 // Controls
-const controls = new OrbitControls(camera, canvas)
-controls.enableDamping = true
-
-const size = 10;
-const divisions = 10;
-
-// Add grid
-// const gridHelper = new THREE.GridHelper( 100, 100 );
-// scene.add( gridHelper );
+// const controls = new OrbitControls(camera, canvas)
+// controls.enableDamping = true
 
 /**
  * Animate
@@ -172,9 +174,9 @@ let targetY = 0;
 const windowHalfX = window.innerWidth / 2;
 const windowHalfY = window.innerHeight / 2;
 
-const radius = 7;
+let radius = 7;
 
-const onDocumentMouseMove = (event) => {
+const moveCamera = (event) => {
     mouseX = (event.clientX - windowHalfX);
     mouseY = (event.clientY - windowHalfY);
 
@@ -193,43 +195,103 @@ const onDocumentMouseMove = (event) => {
 
 document.addEventListener('keydown', (event) => {
     if (event.key === 'c') {
-        document.addEventListener('mousemove', onDocumentMouseMove);
+        document.addEventListener('mousemove', moveCamera);
     }
 });
 
 document.addEventListener('keyup', (event) => {
     if (event.key === 'c') {
-        document.removeEventListener('mousemove', onDocumentMouseMove);
+        document.removeEventListener('mousemove', moveCamera);
     }
 });
 
+canvas.onwheel = (event) => {
+    event.preventDefault();
+
+    // if the radius is too small, then the user would look inside the animal, which would look buggy.
+    // if the radius is too large, then the user would be unable to see the animal.
+    // here, we bind the radius to only appear in an appropriate range.
+    if (radius + event.deltaY * 0.01 > 10 || radius + event.deltaY * 0.01 < 3) {
+        return;
+    }
+
+    camera.position.x *= (radius + event.deltaY * 0.01) / radius;
+    camera.position.y *= (radius + event.deltaY * 0.01) / radius;
+    camera.position.z *= (radius + event.deltaY * 0.01) / radius;
+
+    radius += event.deltaY * 0.01;
+
+    camera.lookAt(0, 0, 0);
+};
+
+const bodyparts = [];
 const addBodyPart = (event) => {
     const location = event.intersects[0].point;  // location of the click
-
-    // now we create a new bodypart, which we set as just a sphere for now.
-    // later, the user will be able to control what kind of bodypart to make.
+    console.log("Location of the click: ", location);
+    // now we create a new bodypart.
+    // the user can control what kind of bodypart to make by selecting one from the drop-down.
     // also, this addBodyPart method is added to the new bodypart so that the user can add bodyparts on other bodyparts
 
-    const geometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 64, 64, false);
-    const bodypart = new THREE.Mesh(geometry, material);
-    
-    scene.add(bodypart);
-    bodypart.position.set(location.x, location.y, location.z);
-    bodypart.on('click', addBodyPart);
+    const bodypartType = document.getElementById('bodypart-type').value;
+    switch (bodypartType) {
+        case 'Eye':
+            // add the eyeball
+            const eyeballRadius = 0.5;
+
+            const eyeballGeometry = new THREE.SphereGeometry(eyeballRadius, 64, 64);
+            const eyeballMaterial = new THREE.MeshStandardMaterial();
+            eyeballMaterial.color = new THREE.Color(0xffffff);
+            const eyeballMesh = new THREE.Mesh(eyeballGeometry, eyeballMaterial);
+            scene.add(eyeballMesh);
+            eyeballMesh.position.set(location.x, location.y, location.z);
+            eyeballMesh.on('click', addBodyPart);
+
+            // add a pupil
+            const pupilGeometry = new THREE.SphereGeometry(0.1, 64, 64);
+            const pupilMaterial = new THREE.MeshStandardMaterial();
+            pupilMaterial.color = new THREE.Color(0x000000);
+            const pupilMesh = new THREE.Mesh(pupilGeometry, pupilMaterial);
+            scene.add(pupilMesh);
+            // when we make the pupil, we point it towards the current camera position.
+            // to implement this, we take the vector difference between the center of the eyeball and the camera position.
+            // after that, we scale that vector difference so it has magnitude equal to the radius of the eyeball, and then we place the pupil at the end.
+            let difference = [camera.position.x - location.x, camera.position.y - location.y, camera.position.z - location.z];
+            let distanceToCamera = Math.sqrt(difference[0] * difference[0] + difference[1] * difference[1] + difference[2] * difference[2]); 
+            difference = [difference[0] / distanceToCamera,
+                          difference[1] / distanceToCamera,
+                          difference[2] / distanceToCamera];
+            const pupilLocation = [location.x + difference[0] * eyeballRadius,
+                                   location.y + difference[1] * eyeballRadius,
+                                   location.z + difference[2] * eyeballRadius];
+            pupilMesh.position.set(...pupilLocation);
+            pupilMesh.on('click', addBodyPart);
+
+            bodyparts.push([eyeballMesh, pupilMesh]);
+            break;
+        
+        case 'Arm':
+            // Create a material for the weird arm
+            mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/arm.mtl', function (materials) {
+                materials.preload();
+                // Load the weird arm
+                obj_loader.setMaterials(materials);
+                obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/arm.obj', function (arm) {
+                    arm.scale.set(-0.1,0.1,0.1);
+                    scene.add(arm);
+                    arm.position.set(location.x, location.y-5, location.z+0.5);
+                    //arm.lookAt(torso.position.x, 1000, torso.position.z);
+                    arm.on('click', addBodyPart);
+                    bodyparts.push([arm]);
+                });
+            });
+            break;
+    }
 }
 torso.on('click', addBodyPart);
 
-const clock = new THREE.Clock();
-
-const tick = () => {
-    // Update Orbital Controls
-     controls.update()
-
-    // Render
-    renderer.render(scene, camera);
-
-    // Call tick again on the next frame
-    window.requestAnimationFrame(tick);  
-}
-
-tick();
+// the undo button removes the last body part
+document.getElementById('undo').onclick = (event) => {
+    for (let component of bodyparts.pop()) {
+        scene.remove(component);
+    }
+};
