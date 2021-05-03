@@ -10,7 +10,7 @@
         Bodypart to add: <select id="bodypart-type">
             <option>Eye</option>
             <option>Arm</option>
-        </select>    
+        </select>
     </label>
     <div>
         Select the torso colour:
@@ -30,6 +30,16 @@
         </label>
     </div>
     <button id="undo">Undo</button>
+    <label>
+        Show preview of bodypart on hover: <input type="checkbox" name="preview" id="preview" />
+    </label>
+    <label>
+        Torso to use:
+        <select id="torso">
+            <option value="simple">Simple</option>
+            <option value="horse">Horse</option>
+        </select>
+    </label>
     <canvas class="webgl"></canvas>
 </body>
 </html>

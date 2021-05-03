@@ -94,8 +94,6 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-// Objects
-const geometry = new THREE.CylinderGeometry(1, 1, 5, 64, 64, false);
 
 // Materials
 
@@ -117,8 +115,13 @@ blue.onchange = updateTorsoColor;
 
 updateTorsoColor();
 
+const geometry = new THREE.CylinderGeometry(1, 1, 5, 64, 64, false);
+const simpleTorso = new THREE.Mesh(geometry, material);
+simpleTorso.on('click', addBodyPart);
+scene.add(simpleTorso);
+const torsos = {'simple': simpleTorso};
+let torso = simpleTorso;
 // Import new torso
-const torso = new THREE.Mesh();
 mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/torso/Project+Name.mtl', function (materials) {
     materials.preload();
     obj_loader.setMaterials(materials);
@@ -126,9 +129,17 @@ mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/torso/Project+
         torso.scale.set(0.02,0.02,0.02);
         torso.position.set(-1,-1,0);
         torso.on('click', addBodyPart);
-        scene.add(torso);
+        torsos.horse = torso;
     });
 });
+
+document.getElementById('torso').onchange = function (event) {
+    const torsoType = this.value;
+    scene.remove(torso);
+    torso = torsos[torsoType].clone();
+    simpleTorso.on('click', addBodyPart);
+    scene.add(torso);
+}
 
 // Lights
 
@@ -223,16 +234,19 @@ canvas.onwheel = (event) => {
     camera.lookAt(0, 0, 0);
 };
 
-const bodyparts = [];
-const addBodyPart = (event) => {
-    const location = event.intersects[0].point;  // location of the click
+let armMesh;
+mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/arm.mtl', function (materials) {
+    materials.preload();
+    // Load the weird arm
+    obj_loader.setMaterials(materials);
+    obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/arm.obj', function (arm) {
+        arm.scale.set(-0.1,0.1,0.1);
+        armMesh = arm;
+    });
+});
 
-    // now we create a new bodypart.
-    // the user can control what kind of bodypart to make by selecting one from the drop-down.
-    // also, this addBodyPart method is added to the new bodypart so that the user can add bodyparts on other bodyparts
-
-    const bodypartType = document.getElementById('bodypart-type').value;
-    switch (bodypartType) {
+const makeBodyPart = (type, location) => {
+    switch (type) {
         case 'Eye':
             // add the eyeball
             const eyeballRadius = 0.5;
@@ -241,7 +255,6 @@ const addBodyPart = (event) => {
             const eyeballMaterial = new THREE.MeshStandardMaterial();
             eyeballMaterial.color = new THREE.Color(0xffffff);
             const eyeballMesh = new THREE.Mesh(eyeballGeometry, eyeballMaterial);
-            scene.add(eyeballMesh);
             eyeballMesh.position.set(location.x, location.y, location.z);
             eyeballMesh.on('click', addBodyPart);
 
@@ -250,7 +263,6 @@ const addBodyPart = (event) => {
             const pupilMaterial = new THREE.MeshStandardMaterial();
             pupilMaterial.color = new THREE.Color(0x000000);
             const pupilMesh = new THREE.Mesh(pupilGeometry, pupilMaterial);
-            scene.add(pupilMesh);
             // when we make the pupil, we point it towards the current camera position.
             // to implement this, we take the vector difference between the center of the eyeball and the camera position.
             // after that, we scale that vector difference so it has magnitude equal to the radius of the eyeball, and then we place the pupil at the end.
@@ -265,28 +277,60 @@ const addBodyPart = (event) => {
             pupilMesh.position.set(...pupilLocation);
             pupilMesh.on('click', addBodyPart);
 
-            bodyparts.push([eyeballMesh, pupilMesh]);
-            break;
+            return [eyeballMesh, pupilMesh];
         
         case 'Arm':
-            // Create a material for the weird arm
-            mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/arm.mtl', function (materials) {
-                materials.preload();
-                // Load the weird arm
-                obj_loader.setMaterials(materials);
-                obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/arm.obj', function (arm) {
-                    arm.scale.set(-0.1,0.1,0.1);
-                    scene.add(arm);
-                    arm.position.set(location.x, location.y-5, location.z-1);
-                    //arm.lookAt(torso.position.x, 1000, torso.position.z);
-                    arm.on('click', addBodyPart);
-                    bodyparts.push([arm]);
-                });
-            });
-            break;
+            const arm = armMesh.clone();
+            arm.position.set(location.x, location.y-5, location.z-1);
+            arm.on('click', addBodyPart);
+            return [arm];
+    }
+};
+
+const bodyparts = [];
+function addBodyPart(event) {
+    const location = event.intersects[0].point;  // location of the click
+
+    // now we create a new bodypart.
+    // the user can control what kind of bodypart to make by selecting one from the drop-down.
+    // also, this addBodyPart method is added to the new bodypart so that the user can add bodyparts on other bodyparts
+
+    const bodypartType = document.getElementById('bodypart-type').value;
+    const newBodyPart = makeBodyPart(bodypartType, location);
+    bodyparts.push(newBodyPart);
+
+    for (let component of newBodyPart) {
+        scene.add(component);
     }
 }
-torso.on('click', addBodyPart);
+
+let previewBodypart;
+document.addEventListener('mousemove', function (event) {
+    if (!document.getElementById('preview').checked) {
+        return;
+    }
+
+    if (previewBodypart) {
+        for (let component of previewBodypart) {
+            scene.remove(component);
+        }
+    }
+
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    
+    mouse.x = (event.layerX / canvas.width) * 2 - 1;
+	mouse.y = - (event.layerY / canvas.height) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children);
+    
+    const bodypartType = document.getElementById('bodypart-type').value;
+    previewBodypart = makeBodyPart(bodypartType, intersects[0].point);
+    for (let component of previewBodypart) {
+        scene.add(component);
+    }
+});
 
 // the undo button removes the last body part
 document.getElementById('undo').onclick = (event) => {
