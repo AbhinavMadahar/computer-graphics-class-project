@@ -328,6 +328,8 @@ document.addEventListener('mousemove', function (event) {
     const bodypartType = document.getElementById('bodypart-type').value;
     previewBodypart = makeBodyPart(bodypartType, intersects[0].point);
     for (let component of previewBodypart) {
+        component.material.opacity = 0.5;
+        component.material.transparent = true;
         scene.add(component);
     }
 });
