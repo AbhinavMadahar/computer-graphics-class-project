@@ -117,9 +117,18 @@ blue.onchange = updateTorsoColor;
 
 updateTorsoColor();
 
-// Mesh
-const torso = new THREE.Mesh(geometry, material);
-scene.add(torso);
+// Import new torso
+const torso = new THREE.Mesh();
+mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/torso/Project+Name.mtl', function (materials) {
+    materials.preload();
+    obj_loader.setMaterials(materials);
+    obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/torso/Project+Name.obj', function (torso) {
+        torso.scale.set(0.02,0.02,0.02);
+        torso.position.set(-1,-1,0);
+        torso.on('click', addBodyPart);
+        scene.add(torso);
+    });
+});
 
 // Lights
 
