@@ -346,7 +346,6 @@ function addBodyPart(event) {
     const bodypartType = document.getElementById('bodypart-type').value;
     const newBodyPart = makeBodyPart(bodypartType, location).then(bodypart => {
         bodyparts.push(bodypart);
-        console.log(bodyparts);
 
         for (let component of bodypart) {
             scene.add(component);
