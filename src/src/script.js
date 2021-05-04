@@ -314,6 +314,11 @@ const loadBodyPart = async (type) => {
     return bodypartDB[type].cached.clone();
 }
 
+// we pre-cache the body parts
+for (let bodypart in bodypartDB) {
+    loadBodyPart(bodypart);
+}
+
 const makeBodyPart = async (type, location) => {
     // the simple eye is drawn here with two spheres
     switch (type) {
