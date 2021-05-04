@@ -130,8 +130,7 @@ mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/torso/Project+
     obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/torso/Project+Name.obj', function (torso) {
         torso.scale.set(0.04,0.04,0.04);
         torso.position.set(-1,-1,0.5);
-        torso.on('click', addBodyPart);
-        torsos.horse = torsos;
+        torsos.horse = torso;
     });
 });
 
@@ -139,7 +138,7 @@ document.getElementById('torso').onchange = function (event) {
     const torsoType = this.value;
     scene.remove(torso);
     torso = torsos[torsoType].clone();
-    simpleTorso.on('click', addBodyPart);
+    torso.on('click', addBodyPart);
     scene.add(torso);
 }
 
