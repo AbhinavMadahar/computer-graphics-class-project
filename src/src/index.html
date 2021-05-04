@@ -7,71 +7,66 @@
 </head>
 <body>
     <div>
-        <p>Add bodyparts!</p>
         <label>
-            Eyes
-            <select title="eye" id="eye">
+            Select a torso to add:
+            <select id="torso">
+                <option value="simple">Simple</option>
+                <option value="horse">Horse</option>
+            </select>
+        </label>
+    </div>
+    <label>
+        Select a body part to add
+        <select id="bodypart-type">
+            <optgroup label="Eyes">
                 <option>Eye 1</option>
                 <option>Eye 2</option>
                 <option>Eye 3</option>
                 <option>Eye 4</option>
                 <option>Eye 5</option>
-            </select>
-        </label>
-        <label>
-            Noses
-            <select title="nose" id="nose">
+            </optgroup>
+            <optgroup label="Nose">
                 <option>Nose 1</option>
                 <option>Nose 2</option>
                 <option>Nose 3</option>
                 <option>Nose 4</option>
                 <option>Nose 5</option>
-            </select>
-        </label>
-        <label>
-            Ears
-            <select title="ear" id="ear">
+            </optgroup>
+            <optgroup label="Ears">
                 <option>Ear 1</option>
-            </select>
-        </label>
-        <label>
-            Arm
-            <select title="arm" id="arm">
+            </optgroup>
+            <optgroup label="Arms">
                 <option>Arm 1</option>
-            </select>
-        </label>
-        <label>
-            Leg
-            <select title="leg" id="leg">
+            </optgroup>
+            <optgroup label="Legs">
                 <option>Leg 1</option>
-            </select>
-        </label>
-        <label>
-            Tail
-            <select title="tail" id="tail">
+            </optgroup>
+            <optgroup label="Tails">
                 <option>Tail 1</option>
-            </select>
-        </label>
-    </div>
+            </optgroup>
+        </select>
+    </label>
     <div>
-       <p> Select the torso colour: </p>
+        Select the torso colour:
         <label>
             Red: &nbsp &nbsp
             <input type="range" id="red" name="red" value="127" min="0" max="255" />
         </label>
-        <br />
         <label>
             Green: &nbsp 
             <input type="range" id="green" name="green" value="127" min="0" max="255" />
         </label>
-        <br />
         <label>
             Blue: &nbsp &nbsp
             <input type="range" id="blue" name="blue" value="127" min="0" max="255" />
         </label>
     </div>
     <button id="undo">Undo</button>
-    <button id="add">Add</button>
+    <label>
+        Show preview of body part on hover:
+        <input type="checkbox" id="preview" />
+    </label>
+    <p>To move the camera, hold 'c' while you move your mouse along the canvas.</p>
     <canvas class="webgl"></canvas>
 </body>
 </html>

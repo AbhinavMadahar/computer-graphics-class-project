@@ -2,10 +2,10 @@ import './style.css';
 import * as THREE from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { DragControls } from 'three/examples/jsm/controls/DragControls.js';
 import * as dat from 'dat.gui';
 import { Interaction } from 'three.interaction';
+import { ArrayCamera } from 'three';
 
 // Loading
 const textureLoader = new THREE.TextureLoader();
@@ -129,7 +129,8 @@ mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/torso/Project+
     obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/torso/Project+Name.obj', function (torso) {
         torso.scale.set(0.04,0.04,0.04);
         torso.position.set(-1,-1,0.5);
-        scene.add(torso);
+        torso.on('click', addBodyPart);
+        torsos.horse = torsos;
     });
 });
 
@@ -165,10 +166,6 @@ window.addEventListener('resize', () =>
     renderer.setSize(sizes.width, sizes.height)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 })
-
-// Controls
-const controls1 = new OrbitControls(camera, canvas)
-controls1.enableDamping = true;
 
 /**
  * Animate
@@ -233,20 +230,11 @@ canvas.onwheel = (event) => {
     camera.lookAt(0, 0, 0);
 };
 
-let armMesh;
-mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/arm.mtl', function (materials) {
-    materials.preload();
-    // Load the weird arm
-    obj_loader.setMaterials(materials);
-    obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/arm.obj', function (arm) {
-        arm.scale.set(-0.1,0.1,0.1);
-        armMesh = arm;
-    });
-});
 
-const makeBodyPart = (type, location) => {
+const makeBodyPart = async (type, location) => {
+    // the simple eye is drawn here with two spheres
     switch (type) {
-        case 'Eye':
+        case 'Eye 1':
             // add the eyeball
             const eyeballRadius = 0.5;
 
@@ -277,13 +265,74 @@ const makeBodyPart = (type, location) => {
             pupilMesh.on('click', addBodyPart);
 
             return [eyeballMesh, pupilMesh];
-        
-        case 'Arm':
-            const arm = armMesh.clone();
-            arm.position.set(location.x, location.y-5, location.z-1);
-            arm.on('click', addBodyPart);
-            return [arm];
     }
+
+    // the remaining body parts need to be loaded
+    const bodyparts = {
+        'Eye 2': {
+            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B72_1+(2).mtl',
+            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B72_1+(2).obj',
+            scale: [5, 5, 5]
+        },
+        'Eye 3': {
+            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B711.mtl',
+            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B711.obj',
+            scale: [5, 5, 5]
+        },
+        'Eye 4': {
+            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B712.mtl',
+            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B712.obj',
+            scale: [5, 5, 5]
+        },
+        'Eye 5': {
+            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B713.mtl',
+            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B713.obj',
+            scale: [5, 5, 5]
+        },
+        'Eye 6': {
+            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B77.mtl',
+            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B77.obj',
+            scale: [5, 5, 5]
+        },
+        'Nose 1': {
+            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n3.mtl',
+            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n3.obj',
+            scale: [0.2, 0.2, 0.2]
+        },
+        'Nose 2': {
+            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n4.mtl',
+            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n4.obj',
+            scale: [0.2, 0.2, 0.2]
+        },
+        'Nose 3': {
+            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n5.mtl',
+            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n5.obj',
+            scale: [0.5, 0.5, 0.5]
+        },
+        'Nose 4': {
+            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n6.mtl',
+            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n6.obj',
+            scale: [0.5, 0.5, 0.5]
+        },
+        'Nose 5': {
+            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n7.mtl',
+            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n7.obj',
+            scale: [0.2, 0.2, 0.2]
+        },
+        'Ear 1': {
+            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/ears/ear3.mtl',
+            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/ears/ear3.obj',
+            scale: [0.2, 0.2, 0.2]
+        },
+    };
+    const {materialURL, objectURL, scale} = bodyparts[type];
+    const materials = await mtl_loader.loadAsync(materialURL);
+    materials.preload();
+    obj_loader.setMaterials(materials);
+    const bodypart = await obj_loader.loadAsync(objectURL);
+    bodypart.scale.set(...scale);
+    bodypart.position.set(location.x, location.y, location.z);
+    return [bodypart];
 };
 
 const bodyparts = [];
@@ -295,12 +344,14 @@ function addBodyPart(event) {
     // also, this addBodyPart method is added to the new bodypart so that the user can add bodyparts on other bodyparts
 
     const bodypartType = document.getElementById('bodypart-type').value;
-    const newBodyPart = makeBodyPart(bodypartType, location);
-    bodyparts.push(newBodyPart);
+    const newBodyPart = makeBodyPart(bodypartType, location).then(bodypart => {
+        bodyparts.push(bodypart);
+        console.log(bodyparts);
 
-    for (let component of newBodyPart) {
-        scene.add(component);
-    }
+        for (let component of bodypart) {
+            scene.add(component);
+        }
+    });
 }
 
 let previewBodypart;
