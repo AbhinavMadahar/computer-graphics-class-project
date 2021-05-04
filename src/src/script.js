@@ -393,6 +393,9 @@ document.addEventListener('mousemove', async function (event) {
 
 // the undo button removes the last body part
 document.getElementById('undo').onclick = (event) => {
+    if (bodyparts.length === 0) {
+        return;
+    }
     for (let component of bodyparts.pop()) {
         scene.remove(component);
     }
