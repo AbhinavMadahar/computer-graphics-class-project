@@ -230,6 +230,77 @@ canvas.onwheel = (event) => {
     camera.lookAt(0, 0, 0);
 };
 
+// the remaining body parts need to be loaded
+const bodypartDB = {
+    'Eye 2': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B72_1+(2).mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B72_1+(2).obj',
+        scale: [5, 5, 5]
+    },
+    'Eye 3': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B711.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B711.obj',
+        scale: [5, 5, 5]
+    },
+    'Eye 4': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B712.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B712.obj',
+        scale: [5, 5, 5]
+    },
+    'Eye 5': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B713.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B713.obj',
+        scale: [5, 5, 5]
+    },
+    'Eye 6': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B77.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B77.obj',
+        scale: [5, 5, 5]
+    },
+    'Nose 1': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n3.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n3.obj',
+        scale: [0.2, 0.2, 0.2]
+    },
+    'Nose 2': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n4.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n4.obj',
+        scale: [0.2, 0.2, 0.2]
+    },
+    'Nose 3': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n5.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n5.obj',
+        scale: [0.5, 0.5, 0.5]
+    },
+    'Nose 4': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n6.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n6.obj',
+        scale: [0.5, 0.5, 0.5]
+    },
+    'Nose 5': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n7.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n7.obj',
+        scale: [0.2, 0.2, 0.2]
+    },
+    'Ear 1': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/ears/ear3.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/ears/ear3.obj',
+        scale: [0.2, 0.2, 0.2]
+    },
+};
+
+const loadBodyPart = async (type) => {
+    if (!bodypartDB[type].cached) {
+        const {materialURL, objectURL, scale} = bodypartDB[type];
+        const materials = await mtl_loader.loadAsync(materialURL);
+        materials.preload();
+        obj_loader.setMaterials(materials);
+        const bodypart = await obj_loader.loadAsync(objectURL);
+        bodypartDB[type].cached = bodypart;
+    }
+
+    return bodypartDB[type].cached.clone();
+}
 
 const makeBodyPart = async (type, location) => {
     // the simple eye is drawn here with two spheres
@@ -267,69 +338,8 @@ const makeBodyPart = async (type, location) => {
             return [eyeballMesh, pupilMesh];
     }
 
-    // the remaining body parts need to be loaded
-    const bodyparts = {
-        'Eye 2': {
-            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B72_1+(2).mtl',
-            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B72_1+(2).obj',
-            scale: [5, 5, 5]
-        },
-        'Eye 3': {
-            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B711.mtl',
-            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B711.obj',
-            scale: [5, 5, 5]
-        },
-        'Eye 4': {
-            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B712.mtl',
-            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B712.obj',
-            scale: [5, 5, 5]
-        },
-        'Eye 5': {
-            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B713.mtl',
-            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B713.obj',
-            scale: [5, 5, 5]
-        },
-        'Eye 6': {
-            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B77.mtl',
-            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B77.obj',
-            scale: [5, 5, 5]
-        },
-        'Nose 1': {
-            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n3.mtl',
-            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n3.obj',
-            scale: [0.2, 0.2, 0.2]
-        },
-        'Nose 2': {
-            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n4.mtl',
-            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n4.obj',
-            scale: [0.2, 0.2, 0.2]
-        },
-        'Nose 3': {
-            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n5.mtl',
-            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n5.obj',
-            scale: [0.5, 0.5, 0.5]
-        },
-        'Nose 4': {
-            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n6.mtl',
-            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n6.obj',
-            scale: [0.5, 0.5, 0.5]
-        },
-        'Nose 5': {
-            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n7.mtl',
-            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n7.obj',
-            scale: [0.2, 0.2, 0.2]
-        },
-        'Ear 1': {
-            materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/ears/ear3.mtl',
-            objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/ears/ear3.obj',
-            scale: [0.2, 0.2, 0.2]
-        },
-    };
-    const {materialURL, objectURL, scale} = bodyparts[type];
-    const materials = await mtl_loader.loadAsync(materialURL);
-    materials.preload();
-    obj_loader.setMaterials(materials);
-    const bodypart = await obj_loader.loadAsync(objectURL);
+    const {scale} = bodypartDB[type];
+    const bodypart = await loadBodyPart(type);
     bodypart.scale.set(...scale);
     bodypart.position.set(location.x, location.y, location.z);
     return [bodypart];
