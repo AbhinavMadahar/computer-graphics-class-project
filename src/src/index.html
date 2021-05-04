@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThreeJS Starter</title>
+</head>
+<body>
+    <!-- <body style="background-color:dodgerblue;"> -->
+
+    <label>
+        Bodypart to add: <select id="eyes">
+            <option>EYES</option>
+            <option>Eye1</option>
+            <option>Eye2</option>
+            <option>Eye3</option>
+            <option>Eye4</option>
+            <option>Eye5</option>
+        </select>    
+        <select id="noses">
+            <option>NOSES</option>
+            <option>Nose1</option>
+            <option>Nose2</option>
+            <option>Nose3</option>
+            <option>Nose4</option>
+            <option>Nose5</option>
+        </select>    
+        <select id="ears">
+            <option>EARS</option>
+            <option>Ear1</option>
+        </select>    
+        <select id="bodypart-type">
+            <option>Arm</option>
+            <option>Arm1</option>
+        </select>    
+        <select id="bodypart-type">
+            <option>Leg</option>
+            <option>Leg1</option>
+        </select>    
+        <select id="bodypart-type">
+            <option>Tail</option>
+            <option>Tail1</option>
+        </select>    
+    </label>
+    <div>
+       <p> Select the torso colour: </p>
+        <label>
+            Red: &nbsp &nbsp
+            <input type="range" id="red" name="red" value="127" min="0" max="255" />
+        </label>
+        <br />
+        <label>
+            Green: &nbsp 
+            <input type="range" id="green" name="green" value="127" min="0" max="255" />
+        </label>
+        <br />
+        <label>
+            Blue: &nbsp &nbsp
+            <input type="range" id="blue" name="blue" value="127" min="0" max="255" />
+        </label>
+    </div>
+    <button id="undo">Undo</button>
+    <button id="add">Add</button>
+    <canvas class="webgl"></canvas>
+</body>
+</html>

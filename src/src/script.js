@@ -74,29 +74,27 @@ let skybox = new THREE.Mesh( skyboxGeo, materialArray );
 scene.add(skybox);  
 animate();
 
-function animate() {
-    renderer.render(scene,camera);
-    requestAnimationFrame(animate);
-}
-
 //Set up the grass ground
-var grassTex = new THREE.TextureLoader().load('https://cs428-project.s3.us-east-2.amazonaws.com/grass/grass_mesh.png'); 
+const grassTex = new THREE.TextureLoader().load('https://cs428-project.s3.us-east-2.amazonaws.com/grass/grass_mesh.png'); 
 grassTex.wrapS = THREE.RepeatWrapping; 
 grassTex.wrapT = THREE.RepeatWrapping; 
 grassTex.repeat.x = 256; 
 grassTex.repeat.y = 256; 
-var groundMat = new THREE.MeshBasicMaterial({map:grassTex}); 
 
-var groundGeo = new THREE.PlaneGeometry(400,400); 
+const groundMat = new THREE.MeshBasicMaterial({ map: grassTex }); 
 
-var ground = new THREE.Mesh(groundGeo,groundMat); 
-ground.position.y = -1.9;
+const groundGeo = new THREE.PlaneGeometry(400, 400); 
+
+const ground = new THREE.Mesh(groundGeo,groundMat); 
+ground.position.y = -3;
 ground.rotation.x = -Math.PI/2;  
 ground.doubleSided = true; 
 scene.add(ground);
 
-// Objects
-const geometry = new THREE.CylinderGeometry(1, 1, 5, 64, 64, false);
+function animate() {
+    renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+}
 
 // Materials
 const material = new THREE.MeshStandardMaterial();
@@ -117,12 +115,14 @@ blue.onchange = updateTorsoColor;
 
 updateTorsoColor();
 
-// Mesh
-// const torso = new THREE.Mesh(geometry, material);
-// scene.add(torso);
+const geometry = new THREE.CylinderGeometry(1, 1, 5, 64, 64, false);
+const simpleTorso = new THREE.Mesh(geometry, material);
+simpleTorso.on('click', addBodyPart);
+scene.add(simpleTorso);
+const torsos = {'simple': simpleTorso};
+let torso = simpleTorso;
 
 // Import new torso
-const torso = new THREE.Mesh();
 mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/torso/Project+Name.mtl', function (materials) {
     materials.preload();
     obj_loader.setMaterials(materials);
@@ -132,6 +132,14 @@ mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/torso/Project+
         scene.add(torso);
     });
 });
+
+document.getElementById('torso').onchange = function (event) {
+    const torsoType = this.value;
+    scene.remove(torso);
+    torso = torsos[torsoType].clone();
+    simpleTorso.on('click', addBodyPart);
+    scene.add(torso);
+}
 
 // Lights
 const numberOfLights = 10;
@@ -225,17 +233,20 @@ canvas.onwheel = (event) => {
     camera.lookAt(0, 0, 0);
 };
 
-const bodyparts = [];
-const addBodyPart = (event) => {
-    const location = event.intersects[0].point;  // location of the click
-    console.log("Location of the click: ", location);
-    // now we create a new bodypart.
-    // the user can control what kind of bodypart to make by selecting one from the drop-down.
-    // also, this addBodyPart method is added to the new bodypart so that the user can add bodyparts on other bodyparts
+let armMesh;
+mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/arm.mtl', function (materials) {
+    materials.preload();
+    // Load the weird arm
+    obj_loader.setMaterials(materials);
+    obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/arm.obj', function (arm) {
+        arm.scale.set(-0.1,0.1,0.1);
+        armMesh = arm;
+    });
+});
 
-    var bodypartType = document.getElementById('eyes').value;
-    switch (bodypartType) {
-        case 'Eye1':
+const makeBodyPart = (type, location) => {
+    switch (type) {
+        case 'Eye':
             // add the eyeball
             const eyeballRadius = 0.5;
 
@@ -243,7 +254,6 @@ const addBodyPart = (event) => {
             const eyeballMaterial = new THREE.MeshStandardMaterial();
             eyeballMaterial.color = new THREE.Color(0xffffff);
             const eyeballMesh = new THREE.Mesh(eyeballGeometry, eyeballMaterial);
-            scene.add(eyeballMesh);
             eyeballMesh.position.set(location.x, location.y, location.z);
             eyeballMesh.on('click', addBodyPart);
 
@@ -252,7 +262,6 @@ const addBodyPart = (event) => {
             const pupilMaterial = new THREE.MeshStandardMaterial();
             pupilMaterial.color = new THREE.Color(0x000000);
             const pupilMesh = new THREE.Mesh(pupilGeometry, pupilMaterial);
-            scene.add(pupilMesh);
             // when we make the pupil, we point it towards the current camera position.
             // to implement this, we take the vector difference between the center of the eyeball and the camera position.
             // after that, we scale that vector difference so it has magnitude equal to the radius of the eyeball, and then we place the pupil at the end.
@@ -267,210 +276,62 @@ const addBodyPart = (event) => {
             pupilMesh.position.set(...pupilLocation);
             pupilMesh.on('click', addBodyPart);
 
-            bodyparts.push([eyeballMesh, pupilMesh]);
-            break;
+            return [eyeballMesh, pupilMesh];
         
-        case 'Eye2':
-            // Create a material for the weird arm
-            mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B72_1+(2).mtl', function (materials) {
-                materials.preload();
-                // Load the weird arm
-                obj_loader.setMaterials(materials);
-                obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B72_1+(2).obj', function (arm) {
-                    arm.scale.set(5,5,5);
-                    objects.push(arm);
-                    scene.add(arm);                   
-                    //arm.position.set(location.x, location.y-5, location.z+0.5);
-                    arm.position.set(-1,-1,0);
-                    console.log("EYE2");
-                    //arm.lookAt(torso.position.x, 1000, torso.position.z);
-                    //arm.on('click', addBodyPart);
-                    //bodyparts.push([arm]);
-                    
-                });
-            });
-            document.getElementById("eyes").selectedIndex = 0;
-            break;
-
-        case 'Eye3':
-            mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B711.mtl', function (materials) {
-                materials.preload();
-                obj_loader.setMaterials(materials);
-                obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B711.obj', function (arm) {
-                    arm.scale.set(5,5,5);
-                    objects.push(arm);
-                    scene.add(arm);
-                    arm.position.set(-1,-1,0);
-                    console.log("EYE3");
-                    
-
-                });
-            });
-            document.getElementById("eyes").selectedIndex = 0;
-            break;
-
-        case 'Eye4':
-            mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B712.mtl', function (materials) {
-                materials.preload();
-                obj_loader.setMaterials(materials);
-                obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B712.obj', function (arm) {
-                    arm.scale.set(5,5,5);
-                    objects.push(arm);
-                    scene.add(arm);
-                    arm.position.set(-1,-1,0);
-                    console.log("EYE4");
-                });
-            });
-            document.getElementById("eyes").selectedIndex = 0;
-            break;
-
-        case 'Eye5':
-                mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B713.mtl', function (materials) {
-                    materials.preload();
-                    obj_loader.setMaterials(materials);
-                    obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B713.obj', function (arm) {
-                        arm.scale.set(5,5,5);
-                        objects.push(arm);
-                        scene.add(arm);
-                        arm.position.set(-1,-1,0);
-                        console.log("EYE5");
-                    });
-                });
-                document.getElementById("eyes").selectedIndex = 0;
-                break;
-
-        case 'Eye6':
-                mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B77.mtl', function (materials) {
-                    materials.preload();
-                    obj_loader.setMaterials(materials);
-                    obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B77.obj', function (arm) {
-                        arm.scale.set(5,5,5);
-                        objects.push(arm);
-                        scene.add(arm);
-                        arm.position.set(-1,-1,0);
-                        console.log("EYE6");
-                    });
-                });
-                document.getElementById("eyes").selectedIndex = 0;
-                break;
+        case 'Arm':
+            const arm = armMesh.clone();
+            arm.position.set(location.x, location.y-5, location.z-1);
+            arm.on('click', addBodyPart);
+            return [arm];
     }
+};
 
-    bodypartType = document.getElementById('noses').value;
-    switch (bodypartType) {
-        case 'Nose1':
-            mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/noses/n3.mtl', function (materials) {
-                materials.preload();
-                obj_loader.setMaterials(materials);
-                obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/noses/n3.obj', function (arm) {
-                    arm.scale.set(0.2,0.2,0.2);
-                    objects.push(arm);
-                    scene.add(arm);
-                    arm.position.set(-1,-1,0);
-                    console.log("NOSE1");
-                });
-            });
-            document.getElementById("noses").selectedIndex = 0;
-            break;
+const bodyparts = [];
+function addBodyPart(event) {
+    const location = event.intersects[0].point;  // location of the click
 
-        case 'Nose2':
-            mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/noses/n4.mtl', function (materials) {
-                materials.preload();
-                obj_loader.setMaterials(materials);
-                obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/noses/n4.obj', function (arm) {
-                    arm.scale.set(0.2,0.2,0.2);
-                    objects.push(arm);
-                    scene.add(arm);
-                    arm.position.set(-1,-1,0);
-                    console.log("NOSE2");
-                 });
-            });
-            document.getElementById("noses").selectedIndex = 0;
-            break;
-        case 'Nose3':
-            mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/noses/n5.mtl', function (materials) {
-                materials.preload();
-                obj_loader.setMaterials(materials);
-                obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/noses/n5.obj', function (arm) {
-                    arm.scale.set(0.5,0.5,0.5);
-                    objects.push(arm);
-                    scene.add(arm);
-                    arm.position.set(-1,-1,0);
-                    console.log("NOSE3");
-                });
-            });
-            document.getElementById("noses").selectedIndex = 0;
-            break;
+    // now we create a new bodypart.
+    // the user can control what kind of bodypart to make by selecting one from the drop-down.
+    // also, this addBodyPart method is added to the new bodypart so that the user can add bodyparts on other bodyparts
 
-        case 'Nose4':
-            mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/noses/n6.mtl', function (materials) {
-                materials.preload();
-                obj_loader.setMaterials(materials);
-                obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/noses/n6.obj', function (arm) {
-                    arm.scale.set(0.5,0.5,0.5);
-                    objects.push(arm);
-                    scene.add(arm);
-                    arm.position.set(-1,-1,0);
-                    console.log("NOSE4");
-                });
-            });
-            document.getElementById("noses").selectedIndex = 0;
-            break;
-        case 'Nose5':
-            mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/noses/n7.mtl', function (materials) {
-                materials.preload();
-                obj_loader.setMaterials(materials);
-                obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/noses/n7.obj', function (arm) {
-                    arm.scale.set(0.2,0.2,0.2);
-                    objects.push(arm);
-                    scene.add(arm);
-                    arm.position.set(-1,-1,0);
-                    console.log("NOSE5");
-                });
-            });
-            document.getElementById("noses").selectedIndex = 0;
-            break;
+    const bodypartType = document.getElementById('bodypart-type').value;
+    const newBodyPart = makeBodyPart(bodypartType, location);
+    bodyparts.push(newBodyPart);
+
+    for (let component of newBodyPart) {
+        scene.add(component);
     }
-
-    bodypartType = document.getElementById('ears').value;
-    switch (bodypartType) {
-        case 'Ear1':
-            mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/ears/ear3.mtl', function (materials) {
-                materials.preload();
-                obj_loader.setMaterials(materials);
-                obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/ears/ear3.obj', function (arm) {
-                    arm.scale.set(4,4,4);
-                    objects.push(arm);
-                    scene.add(arm);
-                    arm.position.set(-1,-1,-1);
-                    console.log("EAR1");
-                });
-            });
-            document.getElementById("ears").selectedIndex = 0;
-            break
-
-    }
-
 }
 
-var objects = [];
-const controls = new DragControls( objects, camera, renderer.domElement ); 
+let previewBodypart;
+document.addEventListener('mousemove', function (event) {
+    if (!document.getElementById('preview').checked) {
+        return;
+    }
 
-scene.on('click', addBodyPart);
+    if (previewBodypart) {
+        for (let component of previewBodypart) {
+            scene.remove(component);
+        }
+    }
 
-// controls.addEventListener( 'dragstart', function ( event ) {
-//     console.log("dragstart");
-// 	event.object.material.emissive.set( 0xaaaaaa );
-// } );
-// controls.addEventListener( 'dragend', function ( event ) {
-// 	event.object.material.emissive.set( 0x000000 );
-// } );
-
-// window.addEventListener('mousemove', onMouseMove, false);
-// var mouse = new THREE.Vector2()
-// function onMouseMove(e) {
-//     mouse.x = ( e.clientX / window.innerWidth ) * 2 - 1;
-//     mouse.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
-//   }
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    
+    mouse.x = (event.layerX / canvas.width) * 2 - 1;
+	mouse.y = - (event.layerY / canvas.height) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children);
+    
+    const bodypartType = document.getElementById('bodypart-type').value;
+    previewBodypart = makeBodyPart(bodypartType, intersects[0].point);
+    for (let component of previewBodypart) {
+        component.material.opacity = 0.5;
+        component.material.transparent = true;
+        scene.add(component);
+    }
+});
 
 // the undo button removes the last body part
 document.getElementById('undo').onclick = (event) => {
