@@ -144,14 +144,11 @@ document.getElementById('torso').onchange = function (event) {
 }
 
 // Lights
-const numberOfLights = 10;
-for (let i = 0; i < numberOfLights; i++) {
-    const pointLight = new THREE.PointLight(0xffffff, 0.4);
-    pointLight.position.x = 10 * (Math.random() - 0.5);
-    pointLight.position.y = 10 * (Math.random() - 0.5);
-    pointLight.position.z = 10 * (Math.random() - 0.5);
-    scene.add(pointLight);
-}
+const pointLight = new THREE.PointLight(0xffffff, 1);
+pointLight.position.x = 5;
+pointLight.position.y = 5;
+pointLight.position.z = 5;
+scene.add(pointLight);
 
 window.addEventListener('resize', () =>
 {
