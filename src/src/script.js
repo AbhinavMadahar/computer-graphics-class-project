@@ -36,9 +36,10 @@ const scene = new THREE.Scene();
 // Base camera
 
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 10000);
-camera.position.x = 0;
-camera.position.y = 0;
-camera.position.z = 7;
+camera.position.x = 5;
+camera.position.y = 2;
+camera.position.z = 1;
+camera.lookAt(0, 0, 0);
 scene.add(camera);
 
 /**
@@ -180,7 +181,7 @@ let targetY = 0;
 const windowHalfX = window.innerWidth / 2;
 const windowHalfY = window.innerHeight / 2;
 
-let radius = 7;
+let radius = camera.position.length();
 
 const moveCamera = (event) => {
     mouseX = (event.clientX - windowHalfX);
@@ -235,57 +236,68 @@ const bodypartDB = {
     'Eye 2': {
         materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B72_1+(2).mtl',
         objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B72_1+(2).obj',
-        scale: [5, 5, 5]
+        scale: [5, 5, 5],
+        offset: {x: 1, y: 0, z: -3.5}
     },
     'Eye 3': {
         materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B711.mtl',
         objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B711.obj',
-        scale: [5, 5, 5]
+        scale: [5, 5, 5],
+        offset: {x: 0, y: 0, z: 2.5}
     },
     'Eye 4': {
         materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B712.mtl',
         objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B712.obj',
-        scale: [5, 5, 5]
+        scale: [5, 5, 5],
+        offset: {x: 0, y: 1, z: 3}
     },
     'Eye 5': {
         materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B713.mtl',
         objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B713.obj',
-        scale: [5, 5, 5]
+        scale: [5, 5, 5],
+        offset: {x: 0, y: 0.5, z: 4}
     },
     'Eye 6': {
         materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B77.mtl',
         objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B77.obj',
-        scale: [5, 5, 5]
+        scale: [5, 5, 5],
+        offset: {x: 0, y: 0, z: 0}
     },
     'Nose 1': {
         materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n3.mtl',
         objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n3.obj',
-        scale: [0.2, 0.2, 0.2]
+        scale: [0.2, 0.2, 0.2],
+        offset: {x: 0, y: 0, z: 0}
     },
     'Nose 2': {
         materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n4.mtl',
         objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n4.obj',
-        scale: [0.2, 0.2, 0.2]
+        scale: [0.2, 0.2, 0.2],
+        offset: {x: 0, y: 0, z: 0.5}
     },
     'Nose 3': {
         materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n5.mtl',
         objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n5.obj',
-        scale: [0.5, 0.5, 0.5]
+        scale: [0.5, 0.5, 0.5],
+        offset: {x: 0.3, y: 0, z: 2}
     },
     'Nose 4': {
         materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n6.mtl',
         objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n6.obj',
-        scale: [0.5, 0.5, 0.5]
+        scale: [0.5, 0.5, 0.5],
+        offset: {x: 0, y: 0, z: 3}
     },
     'Nose 5': {
         materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n7.mtl',
         objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n7.obj',
-        scale: [0.2, 0.2, 0.2]
+        scale: [0.2, 0.2, 0.2],
+        offset: {x: 0, y: 0, z: 2}
     },
     'Ear 1': {
         materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/ears/ear3.mtl',
         objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/ears/ear3.obj',
-        scale: [0.2, 0.2, 0.2]
+        scale: [2, 2, 2],
+        offset: {x: 0, y: -0.5, z: 0.5}
     },
 };
 
@@ -338,10 +350,10 @@ const makeBodyPart = async (type, location) => {
             return [eyeballMesh, pupilMesh];
     }
 
-    const {scale} = bodypartDB[type];
+    const {scale, offset} = bodypartDB[type];
     const bodypart = await loadBodyPart(type);
     bodypart.scale.set(...scale);
-    bodypart.position.set(location.x, location.y, location.z);
+    bodypart.position.set(location.x + offset.x, location.y + offset.y, location.z + offset.z);
     return [bodypart];
 };
 
