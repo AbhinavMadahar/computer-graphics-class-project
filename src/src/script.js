@@ -364,7 +364,7 @@ function addBodyPart(event) {
 }
 
 let previewBodypart;
-document.addEventListener('mousemove', function (event) {
+document.addEventListener('mousemove', async function (event) {
     if (!document.getElementById('preview').checked) {
         return;
     }
@@ -385,10 +385,8 @@ document.addEventListener('mousemove', function (event) {
     const intersects = raycaster.intersectObjects(scene.children);
     
     const bodypartType = document.getElementById('bodypart-type').value;
-    previewBodypart = makeBodyPart(bodypartType, intersects[0].point);
+    previewBodypart = await makeBodyPart(bodypartType, intersects[0].point);
     for (let component of previewBodypart) {
-        component.material.opacity = 0.5;
-        component.material.transparent = true;
         scene.add(component);
     }
 });
