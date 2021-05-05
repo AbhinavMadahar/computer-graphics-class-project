@@ -134,6 +134,16 @@ mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/torso/Project+
     });
 });
 
+mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/body2.mtl', function (materials) {
+    materials.preload();
+    obj_loader.setMaterials(materials);
+    obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/body2.obj', function (torso) {
+        torso.scale.set(3, 3, 3);
+        torso.position.set(-1,-1,0.5);
+        torsos.third = torso;
+    });
+});
+
 document.getElementById('torso').onchange = function (event) {
     const torsoType = this.value;
     scene.remove(torso);
@@ -294,6 +304,12 @@ const bodypartDB = {
         objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/ears/ear3.obj',
         scale: [2, 2, 2],
         offset: {x: 0, y: -0.5, z: 0.5}
+    },
+    'Ear 2': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/horns1+(2).mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/horns1+(2).obj',
+        scale: [1, 1, 1],
+        offset: {x: 0, y: 0, z: 0}
     },
 };
 
