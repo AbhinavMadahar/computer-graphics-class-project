@@ -361,9 +361,6 @@ const bodypartDB = {
     },
 };
 
-const axesHelper = new THREE.AxesHelper( 5 );
-scene.add( axesHelper );
-
 const loadBodyPart = async (type) => {
     if (!bodypartDB[type].cached) {
         const {materialURL, objectURL, scale} = bodypartDB[type];
