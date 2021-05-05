@@ -308,10 +308,61 @@ const bodypartDB = {
     'Ear 2': {
         materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/horns1+(2).mtl',
         objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/horns1+(2).obj',
+        scale: [3, 3, 3],
+        offset: {x: 0, y: 0, z: -3.5}
+    },
+    'Tail 1': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/tails/tail2.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/tails/tail2.obj',
+        scale: [1, 1, 1],
+        offset: {x: 0, y: 0, z: -2}
+    },
+    'Tail 2': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/tails/tail4.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/tails/tail4.obj',
+        scale: [1, 1, 1],
+        offset: {x: 0.5, y: 0, z: 0}
+    },
+    'Tail 3': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/tails/tail5.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/tails/tail5.obj',
+        scale: [1, 1, 1],
+        offset: {x: 0, y: 0, z: 0.5}
+    },
+    'Leg 1': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/legs/leg4.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/legs/leg4.obj',
+        scale: [1, 1, 1],
+        offset: {x: -3, y: 0, z: 0}
+    },
+    'Leg 2': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/legs/leg2.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/legs/leg2.obj',
         scale: [1, 1, 1],
         offset: {x: 0, y: 0, z: 0}
     },
+    'Arm 1': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/arms/arm_left1.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/arms/arm_left1.obj',
+        scale: [1, 1, 1],
+        offset: {x: -1, y: -1, z: 1}
+    },
+    'Arm 2 (Left)': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/arms/arm_left4.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/arms/arm_left4.obj',
+        scale: [1, 1, 1],
+        offset: {x: -1.5, y: -1, z: 3.75}
+    },
+    'Arm 2 (Right)': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/arms/arm_right4.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/arms/arm_right4.obj',
+        scale: [1, 1, 1],
+        offset: {x: -1.5, y: -1, z: 3.75}
+    },
 };
+
+const axesHelper = new THREE.AxesHelper( 5 );
+scene.add( axesHelper );
 
 const loadBodyPart = async (type) => {
     if (!bodypartDB[type].cached) {
