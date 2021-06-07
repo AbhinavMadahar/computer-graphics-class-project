@@ -2,9 +2,10 @@ import './style.css';
 import * as THREE from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { DragControls } from 'three/examples/jsm/controls/DragControls.js';
 import * as dat from 'dat.gui';
 import { Interaction } from 'three.interaction';
+import { ArrayCamera } from 'three';
 
 // Loading
 const textureLoader = new THREE.TextureLoader();
@@ -35,9 +36,10 @@ const scene = new THREE.Scene();
 // Base camera
 
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 10000);
-camera.position.x = 0;
-camera.position.y = 0;
-camera.position.z = 7;
+camera.position.x = 5;
+camera.position.y = 2;
+camera.position.z = 1;
+camera.lookAt(0, 0, 0);
 scene.add(camera);
 
 /**
@@ -73,34 +75,89 @@ let skybox = new THREE.Mesh( skyboxGeo, materialArray );
 scene.add(skybox);  
 animate();
 
+//Set up the grass ground
+const grassTex = new THREE.TextureLoader().load('https://cs428-project.s3.us-east-2.amazonaws.com/grass/grass_mesh.png'); 
+grassTex.wrapS = THREE.RepeatWrapping; 
+grassTex.wrapT = THREE.RepeatWrapping; 
+grassTex.repeat.x = 256; 
+grassTex.repeat.y = 256; 
+
+const groundMat = new THREE.MeshBasicMaterial({ map: grassTex }); 
+
+const groundGeo = new THREE.PlaneGeometry(400, 400); 
+
+const ground = new THREE.Mesh(groundGeo,groundMat); 
+ground.position.y = -3;
+ground.rotation.x = -Math.PI/2;  
+ground.doubleSided = true; 
+scene.add(ground);
+
 function animate() {
-    renderer.render(scene,camera);
+    renderer.render(scene, camera);
     requestAnimationFrame(animate);
 }
 
-// Objects
-const geometry = new THREE.CylinderGeometry(1, 1, 5, 64, 64, false);
-
 // Materials
-
 const material = new THREE.MeshStandardMaterial();
 material.normalMap = snakeTexture;
-material.color = new THREE.Color(0x00ff00);
+material.color = new THREE.Color(0x000000);
 
-// Mesh
-const torso = new THREE.Mesh(geometry, material);
-scene.add(torso);
+const red = document.getElementById('red');
+const green = document.getElementById('green');
+const blue = document.getElementById('blue');
+
+const updateTorsoColor = (event) => {
+    material.color.setRGB(red.value / 255, green.value / 255, blue.value / 255);
+}
+
+red.onchange = updateTorsoColor;
+green.onchange = updateTorsoColor;
+blue.onchange = updateTorsoColor;
+
+updateTorsoColor();
+
+const geometry = new THREE.CylinderGeometry(1, 1, 5, 64, 64, false);
+const simpleTorso = new THREE.Mesh(geometry, material);
+simpleTorso.on('click', addBodyPart);
+scene.add(simpleTorso);
+const torsos = {'simple': simpleTorso};
+let torso = simpleTorso;
+
+// Import new torso
+mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/torso/Project+Name.mtl', function (materials) {
+    materials.preload();
+    obj_loader.setMaterials(materials);
+    obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/torso/Project+Name.obj', function (torso) {
+        torso.scale.set(0.04,0.04,0.04);
+        torso.position.set(-1,-1,0.5);
+        torsos.horse = torso;
+    });
+});
+
+mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/body2.mtl', function (materials) {
+    materials.preload();
+    obj_loader.setMaterials(materials);
+    obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/body2.obj', function (torso) {
+        torso.scale.set(3, 3, 3);
+        torso.position.set(-1,-1,0.5);
+        torsos.third = torso;
+    });
+});
+
+document.getElementById('torso').onchange = function (event) {
+    const torsoType = this.value;
+    scene.remove(torso);
+    torso = torsos[torsoType].clone();
+    torso.on('click', addBodyPart);
+    scene.add(torso);
+}
 
 // Lights
-
-const numberOfLights = 10;
-for (let i = 0; i < numberOfLights; i++) {
-    const pointLight = new THREE.PointLight(0xffffff, 0.4);
-    pointLight.position.x = 10 * (Math.random() - 0.5);
-    pointLight.position.y = 10 * (Math.random() - 0.5);
-    pointLight.position.z = 10 * (Math.random() - 0.5);
-    scene.add(pointLight);
-}
+const pointLight = new THREE.PointLight(0xffffff, 1);
+pointLight.position.x = 5;
+pointLight.position.y = 5;
+pointLight.position.z = 5;
+scene.add(pointLight);
 
 window.addEventListener('resize', () =>
 {
@@ -117,10 +174,6 @@ window.addEventListener('resize', () =>
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 })
 
-// Controls
-// const controls = new OrbitControls(camera, canvas)
-// controls.enableDamping = true
-
 /**
  * Animate
  */
@@ -134,9 +187,9 @@ let targetY = 0;
 const windowHalfX = window.innerWidth / 2;
 const windowHalfY = window.innerHeight / 2;
 
-let radius = 7;
+let radius = camera.position.length();
 
-const onDocumentMouseMove = (event) => {
+const moveCamera = (event) => {
     mouseX = (event.clientX - windowHalfX);
     mouseY = (event.clientY - windowHalfY);
 
@@ -155,38 +208,181 @@ const onDocumentMouseMove = (event) => {
 
 document.addEventListener('keydown', (event) => {
     if (event.key === 'c') {
-        document.addEventListener('mousemove', onDocumentMouseMove);
+        document.addEventListener('mousemove', moveCamera);
     }
 });
 
 document.addEventListener('keyup', (event) => {
     if (event.key === 'c') {
-        document.removeEventListener('mousemove', onDocumentMouseMove);
+        document.removeEventListener('mousemove', moveCamera);
     }
 });
 
 canvas.onwheel = (event) => {
     event.preventDefault();
 
-    camera.position.x *= (radius + event.deltaY * 0.1) / radius;
-    camera.position.y *= (radius + event.deltaY * 0.1) / radius;
-    camera.position.z *= (radius + event.deltaY * 0.1) / radius;
+    // if the radius is too small, then the user would look inside the animal, which would look buggy.
+    // if the radius is too large, then the user would be unable to see the animal.
+    // here, we bind the radius to only appear in an appropriate range.
+    if (radius + event.deltaY * 0.01 > 10 || radius + event.deltaY * 0.01 < 3) {
+        return;
+    }
+
+    camera.position.x *= (radius + event.deltaY * 0.01) / radius;
+    camera.position.y *= (radius + event.deltaY * 0.01) / radius;
+    camera.position.z *= (radius + event.deltaY * 0.01) / radius;
 
     radius += event.deltaY * 0.01;
 
     camera.lookAt(0, 0, 0);
 };
 
-const addBodyPart = (event) => {
-    const location = event.intersects[0].point;  // location of the click
+// the remaining body parts need to be loaded
+const bodypartDB = {
+    'Eye 2': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B72_1+(2).mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B72_1+(2).obj',
+        scale: [5, 5, 5],
+        offset: {x: 1, y: 0, z: -3.5}
+    },
+    'Eye 3': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B711.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B711.obj',
+        scale: [5, 5, 5],
+        offset: {x: 0, y: 0, z: 2.5}
+    },
+    'Eye 4': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B712.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B712.obj',
+        scale: [5, 5, 5],
+        offset: {x: 0, y: 1, z: 3}
+    },
+    'Eye 5': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B713.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B713.obj',
+        scale: [5, 5, 5],
+        offset: {x: 0, y: 0.5, z: 4}
+    },
+    'Eye 6': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B77.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/eyes/%D0%B3%D0%BB%D0%B0%D0%B77.obj',
+        scale: [5, 5, 5],
+        offset: {x: 0, y: 0, z: 0}
+    },
+    'Nose 1': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n3.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n3.obj',
+        scale: [0.2, 0.2, 0.2],
+        offset: {x: 0, y: 0, z: 0}
+    },
+    'Nose 2': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n4.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n4.obj',
+        scale: [0.2, 0.2, 0.2],
+        offset: {x: 0, y: 0, z: 0.5}
+    },
+    'Nose 3': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n5.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n5.obj',
+        scale: [0.5, 0.5, 0.5],
+        offset: {x: 0.3, y: 0, z: 2}
+    },
+    'Nose 4': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n6.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n6.obj',
+        scale: [0.5, 0.5, 0.5],
+        offset: {x: 0, y: 0, z: 3}
+    },
+    'Nose 5': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n7.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/noses/n7.obj',
+        scale: [0.2, 0.2, 0.2],
+        offset: {x: 0, y: 0, z: 2}
+    },
+    'Ear 1': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/ears/ear3.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/ears/ear3.obj',
+        scale: [2, 2, 2],
+        offset: {x: 0, y: -0.5, z: 0.5}
+    },
+    'Ear 2': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/horns1+(2).mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/horns1+(2).obj',
+        scale: [3, 3, 3],
+        offset: {x: 0, y: 0, z: -3.5}
+    },
+    'Tail 1': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/tails/tail2.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/tails/tail2.obj',
+        scale: [1, 1, 1],
+        offset: {x: 0, y: 0, z: -2}
+    },
+    'Tail 2': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/tails/tail4.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/tails/tail4.obj',
+        scale: [1, 1, 1],
+        offset: {x: 0.5, y: 0, z: 0}
+    },
+    'Tail 3': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/tails/tail5.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/tails/tail5.obj',
+        scale: [1, 1, 1],
+        offset: {x: 0, y: 0, z: 0.5}
+    },
+    'Leg 1': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/legs/leg4.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/legs/leg4.obj',
+        scale: [1, 1, 1],
+        offset: {x: -3, y: 0, z: 0}
+    },
+    'Leg 2': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/legs/leg2.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/legs/leg2.obj',
+        scale: [1, 1, 1],
+        offset: {x: 0, y: 0, z: 0}
+    },
+    'Arm 1': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/arms/arm_left1.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/arms/arm_left1.obj',
+        scale: [1, 1, 1],
+        offset: {x: -1, y: -1, z: 1}
+    },
+    'Arm 2 (Left)': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/arms/arm_left4.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/arms/arm_left4.obj',
+        scale: [1, 1, 1],
+        offset: {x: -1.5, y: -1, z: 3.75}
+    },
+    'Arm 2 (Right)': {
+        materialURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/arms/arm_right4.mtl',
+        objectURL: 'https://cs428-project.s3.us-east-2.amazonaws.com/arms/arm_right4.obj',
+        scale: [1, 1, 1],
+        offset: {x: -1.5, y: -1, z: 3.75}
+    },
+};
 
-    // now we create a new bodypart.
-    // the user can control what kind of bodypart to make by selecting one from the drop-down.
-    // also, this addBodyPart method is added to the new bodypart so that the user can add bodyparts on other bodyparts
+const loadBodyPart = async (type) => {
+    if (!bodypartDB[type].cached) {
+        const {materialURL, objectURL, scale} = bodypartDB[type];
+        const materials = await mtl_loader.loadAsync(materialURL);
+        materials.preload();
+        obj_loader.setMaterials(materials);
+        const bodypart = await obj_loader.loadAsync(objectURL);
+        bodypartDB[type].cached = bodypart;
+    }
 
-    const bodypartType = document.getElementById('bodypart-type').value;
-    switch (bodypartType) {
-        case 'Eye':
+    return bodypartDB[type].cached.clone();
+}
+
+// we pre-cache the body parts
+for (let bodypart in bodypartDB) {
+    loadBodyPart(bodypart);
+}
+
+const makeBodyPart = async (type, location) => {
+    // the simple eye is drawn here with two spheres
+    switch (type) {
+        case 'Eye 1':
             // add the eyeball
             const eyeballRadius = 0.5;
 
@@ -194,7 +390,6 @@ const addBodyPart = (event) => {
             const eyeballMaterial = new THREE.MeshStandardMaterial();
             eyeballMaterial.color = new THREE.Color(0xffffff);
             const eyeballMesh = new THREE.Mesh(eyeballGeometry, eyeballMaterial);
-            scene.add(eyeballMesh);
             eyeballMesh.position.set(location.x, location.y, location.z);
             eyeballMesh.on('click', addBodyPart);
 
@@ -203,7 +398,6 @@ const addBodyPart = (event) => {
             const pupilMaterial = new THREE.MeshStandardMaterial();
             pupilMaterial.color = new THREE.Color(0x000000);
             const pupilMesh = new THREE.Mesh(pupilGeometry, pupilMaterial);
-            scene.add(pupilMesh);
             // when we make the pupil, we point it towards the current camera position.
             // to implement this, we take the vector difference between the center of the eyeball and the camera position.
             // after that, we scale that vector difference so it has magnitude equal to the radius of the eyeball, and then we place the pupil at the end.
@@ -217,23 +411,69 @@ const addBodyPart = (event) => {
                                    location.z + difference[2] * eyeballRadius];
             pupilMesh.position.set(...pupilLocation);
             pupilMesh.on('click', addBodyPart);
-            break;
-        
-        case 'Arm':
-            // Create a material for the weird arm
-            mtl_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/arm.mtl', function (materials) {
-                materials.preload();
-                // Load the weird arm
-                obj_loader.setMaterials(materials);
-                obj_loader.load('https://cs428-project.s3.us-east-2.amazonaws.com/arm.obj', function (arm) {
-                    arm.scale.set(-0.1,0.1,0.1);
-                    scene.add(arm);
-                    arm.position.set(location.x, location.y-5, location.z-1);
-                    //arm.lookAt(torso.position.x, 1000, torso.position.z);
-                    arm.on('click', addBodyPart);
-                });
-            });
-            break;
+
+            return [eyeballMesh, pupilMesh];
     }
+
+    const {scale, offset} = bodypartDB[type];
+    const bodypart = await loadBodyPart(type);
+    bodypart.scale.set(...scale);
+    bodypart.position.set(location.x + offset.x, location.y + offset.y, location.z + offset.z);
+    return [bodypart];
+};
+
+const bodyparts = [];
+function addBodyPart(event) {
+    const location = event.intersects[0].point;  // location of the click
+
+    // now we create a new bodypart.
+    // the user can control what kind of bodypart to make by selecting one from the drop-down.
+    // also, this addBodyPart method is added to the new bodypart so that the user can add bodyparts on other bodyparts
+
+    const bodypartType = document.getElementById('bodypart-type').value;
+    const newBodyPart = makeBodyPart(bodypartType, location).then(bodypart => {
+        bodyparts.push(bodypart);
+
+        for (let component of bodypart) {
+            scene.add(component);
+        }
+    });
 }
-torso.on('click', addBodyPart);
+
+let previewBodypart;
+document.addEventListener('mousemove', async function (event) {
+    if (!document.getElementById('preview').checked) {
+        return;
+    }
+
+    if (previewBodypart) {
+        for (let component of previewBodypart) {
+            scene.remove(component);
+        }
+    }
+
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    
+    mouse.x = (event.layerX / canvas.width) * 2 - 1;
+	mouse.y = - (event.layerY / canvas.height) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children);
+    
+    const bodypartType = document.getElementById('bodypart-type').value;
+    previewBodypart = await makeBodyPart(bodypartType, intersects[0].point);
+    for (let component of previewBodypart) {
+        scene.add(component);
+    }
+});
+
+// the undo button removes the last body part
+document.getElementById('undo').onclick = (event) => {
+    if (bodyparts.length === 0) {
+        return;
+    }
+    for (let component of bodyparts.pop()) {
+        scene.remove(component);
+    }
+};

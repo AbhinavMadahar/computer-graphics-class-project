@@ -6,12 +6,75 @@
     <title>ThreeJS Starter</title>
 </head>
 <body>
+    <div>
+        <label>
+            Select a torso to add:
+            <select id="torso">
+                <option value="simple">Simple</option>
+                <option value="horse">Horse</option>
+                <option value="third">Human</option>
+            </select>
+        </label>
+    </div>
     <label>
-        Bodypart to add: <select id="bodypart-type">
-            <option>Eye</option>
-            <option>Arm</option>
-        </select>    
+        Select a body part to add
+        <select id="bodypart-type">
+            <optgroup label="Eyes">
+                <option>Eye 1</option>
+                <option>Eye 2</option>
+                <option>Eye 3</option>
+                <option>Eye 4</option>
+                <option>Eye 5</option>
+                <option>Eye 6</option>
+            </optgroup>
+            <optgroup label="Nose">
+                <option>Nose 1</option>
+                <option>Nose 2</option>
+                <option>Nose 3</option>
+                <option>Nose 4</option>
+                <option>Nose 5</option>
+            </optgroup>
+            <optgroup label="Ears">
+                <option>Ear 1</option>
+                <option>Ear 2</option>
+            </optgroup>
+            <optgroup label="Tails">
+                <option>Tail 1</option>
+                <option>Tail 2</option>
+                <option>Tail 3</option>
+            </optgroup>
+            <optgroup label="Legs">
+                <option>Leg 1</option>
+                <option>Leg 2</option>
+            </optgroup>
+            <optgroup label="Arms">
+                <option>Arm 1</option>
+                <option>Arm 2 (Left)</option>
+                <option>Arm 2 (Right)</option>
+            </optgroup>
+        </select>
     </label>
+    <div>
+        Select the torso colour:
+        <label>
+            Red: &nbsp &nbsp
+            <input type="range" id="red" name="red" value="127" min="0" max="255" />
+        </label>
+        <label>
+            Green: &nbsp 
+            <input type="range" id="green" name="green" value="127" min="0" max="255" />
+        </label>
+        <label>
+            Blue: &nbsp &nbsp
+            <input type="range" id="blue" name="blue" value="127" min="0" max="255" />
+        </label>
+    </div>
+    <button id="undo">Undo</button>
+    <label>
+        Show preview of body part on hover:
+        <input type="checkbox" id="preview" />
+    </label>
+    <p>To move the camera, hold 'c' while you move your mouse along the canvas.</p>
     <canvas class="webgl"></canvas>
 </body>
 </html>
